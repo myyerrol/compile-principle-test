@@ -1,0 +1,9 @@
+({S, A, B, C}, {a, b}, f, S, {C})
+f(S, a) = A
+f(S, a) = C
+f(A, a) = A
+f(A, a) = C
+f(A, b) = A
+f(A, b) = B
+f(B, a) = A
+f(B, b) = C
