@@ -47,7 +47,8 @@ double recognizeError(struct DFAActionInfo *p_dfa_action_info);
 
 // Row: State(0)~State(6)
 // Column: '0~9', '.', 'E/e', '+', '-', other
-// State(-1): Error, State(7): End
+// State(-1): Error
+// State(7):  End
 struct DFAActionState dfa_action_state[7][6] = {
     {{1, assignValuesA},   {3, assignValuesB},   {0, recognizeError},
      {-1, recognizeError}, {-1, recognizeError}, {-1, recognizeError}},

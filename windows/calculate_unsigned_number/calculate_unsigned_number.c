@@ -79,9 +79,9 @@ int main()
 
     struct DFAActionState *p_dfa_action_state;
     struct DFAActionInfo  *p_dfa_action_info;
-    p_dfa_action_state = 
+    p_dfa_action_state =
         (struct DFAActionState *)malloc(sizeof(struct DFAActionState));
-    p_dfa_action_info  = 
+    p_dfa_action_info  =
         (struct DFAActionInfo *)malloc(sizeof(struct DFAActionInfo));
 
     printf("Calucate Unsigned Number Test\n");

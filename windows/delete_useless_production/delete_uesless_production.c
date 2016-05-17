@@ -51,14 +51,14 @@ void inputGrammar(struct Grammar *pointer)
         pointer->production[i].tail_len = 0;
         setbuf(stdin, NULL);
 
-        printf("\nProduction[%d] express(!such as S:=aS):\n", i);
+        printf("\nProduction[%d] express(!such as S->aS):\n", i);
         ch = getchar();
         pointer->production[i].head[0] = ch;
-        printf("<%c>", ch);
+        printf("[%c]", ch);
 
         while ((ch = getchar()) != '\n') {
-            if (ch != ':' && ch != '=') {
-                printf("<%c>", ch);
+            if (ch != '-' && ch != '>') {
+                printf("[%c]", ch);
                 pointer->production[i].tail[pointer->production[i].tail_len] = ch;
                 pointer->production[i].tail_len++;
             }
@@ -113,7 +113,7 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
     int i, j, k;
     int flag, flag1, flag2;
 
-    // Initialize grammar1's data
+    // Initialize grammar1's data.
     pointer1->s = pointer->s = 'S';
 
     for (i = 0; i < pointer->vt_len; i++) {
@@ -125,11 +125,11 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
     pointer1->production_num = 0;
 
     // Match all terminal symbols on the right hand side of productions
-    // and move vn and productions to grammar1
+    // and move vn and productions to grammar1.
     for (i = 0; i < pointer->production_num; i++) {
         for (j = 0; j < pointer->production[i].tail_len; j++) {
             for (k = 0; k < pointer->vt_len; k++) {
-                // Match all lower case characters
+                // Match all lower case characters.
                 if (pointer->production[i].tail[j] == pointer->vt[k]) {
                     flag = 1;
                     break;
@@ -142,7 +142,7 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
                 break;
             }
         }
-        // Match successfully
+        // Match successfully.
         if (flag == 1) {
             for (k = 0; k < pointer1->vn_len; k++) {
                 if (pointer->production[i].head[0] == pointer1->vn[k]) {
@@ -153,7 +153,7 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
                     flag = 1;
                 }
             }
-            // Add vn and productions to grammar1 without repetition
+            // Add vn and productions to grammar1 without repetition.
             if (flag == 1) {
                 pointer1->vn[pointer1->vn_len] = pointer->production[i].head[0];
                 pointer1->vn_len++;
@@ -174,7 +174,7 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
     }
 
     // Match all terminal or noterminal symbols on the right hand side of
-    // productions and move the rest vn and productions to grammar1
+    // productions and move the rest vn and productions to grammar1.
     for (i = 0; i < pointer->production_num; i++) {
         if (pointer->production[i].choose_flag == 1) {
             continue;
@@ -236,7 +236,7 @@ void deleteUselessGrammar1(struct Grammar *pointer, struct Grammar *pointer1)
     }
 
     // Match all terminal or noterminal symbols on the left or right hand side
-    // of productions and move the rest vn and productions to grammar1
+    // of productions and move the rest vn and productions to grammar1.
     for (i = 0; i < pointer->production_num; i++) {
         if (pointer->production[i].choose_flag == 1) {
             continue;
@@ -318,7 +318,7 @@ void deleteUselessGrammar2(struct Grammar *pointer1, struct Grammar *pointer2)
     int i, j, k;
     int flag, flag1, flag2, flag3;
 
-    // Initialize grammar2's data
+    // Initialize grammar2's data.
     pointer2->vn_len = 0;
     pointer2->vt_len = 0;
     pointer2->production_num = 0;
@@ -329,7 +329,7 @@ void deleteUselessGrammar2(struct Grammar *pointer1, struct Grammar *pointer2)
 
     // Match the left hand side of productions and move the right hand side of
     // productions to grammar2's vn or vt, and also move productions itself to
-    // grammar2
+    // grammar2.
     for (i = 0; i < pointer1->production_num; i++) {
         for (j = 0; j < pointer2->vn_len; j++) {
             if (pointer1->production[i].head[0] == pointer2->vn[j]) {
@@ -355,7 +355,7 @@ void deleteUselessGrammar2(struct Grammar *pointer1, struct Grammar *pointer2)
                         flag3 = 0;
                     }
                 }
-                // Move the Lower case character to grammar2's vt
+                // Move the Lower case character to grammar2's vt.
                 if (flag1 == 1 && flag2 == 0) {
                     for (k = 0; k < pointer2->vt_len; k++) {
                         if (pointer1->production[i].tail[j] == pointer2->vt[k]) {
@@ -372,7 +372,7 @@ void deleteUselessGrammar2(struct Grammar *pointer1, struct Grammar *pointer2)
                         pointer2->vt_len++;
                     }
                 }
-                // Move the capital character to grammar2's vn
+                // Move the capital character to grammar2's vn.
                 if (flag1 == 0 && flag2 == 1) {
                     for (k = 0; k < pointer2->vn_len; k++) {
                         if (pointer1->production[i].tail[j] == pointer2->vn[k]) {
@@ -405,7 +405,7 @@ void deleteUselessGrammar2(struct Grammar *pointer1, struct Grammar *pointer2)
     }
 
     // Match the left or right hand side of productions on grammar2' vn and vt
-    // and move the productions to grammar2
+    // and move the productions to grammar2.
     for (i = 0; i < pointer1->production_num; i++) {
         if (pointer1->production[i].choose_flag == 1) {
             continue;
@@ -501,7 +501,7 @@ int main()
     scanf("%d", &i);
 
     if (i == 1) {
-        // Initialize grammar's data
+        // Initialize grammar's data.
         pointer->vn_len = 4;
         pointer->vt_len = 3;
         pointer->production_num = 7;

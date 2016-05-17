@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{100D8247-827E-4B15-8927-850DE2B4329C}</ProjectGuid>
+    <ProjectGuid>{40BD4F10-A98A-4162-9010-CE4A2D72D32B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>delete_useless_production</RootNamespace>
+    <RootNamespace>top_down_forecast_analysis</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -49,7 +49,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -74,10 +74,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="delete_useless_production.h" />
+    <ClInclude Include="top_down_forecast_analysis.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="delete_uesless_production.c" />
+    <ClCompile Include="top_down_forecast_analysis.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

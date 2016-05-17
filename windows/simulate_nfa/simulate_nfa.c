@@ -10,22 +10,24 @@ void backtrackNFA(int char_num_index, int char_num, int end_state,
     int flag = 0;
 
     if (*curr_char != NULL) {
-        printf("%-14d %-15d %-13d %s\n", char_num_index, curr_state, end_state, curr_char);
+        printf("%-14d %-15d %-13d %s\n", char_num_index, curr_state, end_state,
+            curr_char);
     }
     else {
-        printf("%-14d %-15d %-13d null\n", char_num_index, curr_state, end_state);
+        printf("%-14d %-15d %-13d null\n", char_num_index, curr_state,
+            end_state);
     }
 
-    // The match is successful
+    // The match is successful.
     if (char_num_index == char_num && curr_state == end_state) {
         printf("Yes\n");
         exit(0);
     }
-    // The match is unsuccessful, backtrack to parent node
+    // The match is unsuccessful, backtrack to parent node.
     else if (char_num_index == char_num && curr_state != end_state) {
         return ;
     }
-    // Don't arrive the leaf node, recurse to get there
+    // Don't arrive the leaf node, recurse to get there.
     else if (char_num_index < char_num) {
         for (i = 0; i < input_char_num; i++) {
             if (*curr_char == input_char[i]) {
@@ -34,19 +36,19 @@ void backtrackNFA(int char_num_index, int char_num, int end_state,
                 break ;
             }
         }
-        // Input char don't exist in nfa
+        // Input char don't exist in nfa.
         if (flag == 0) {
             printf("No\n");
             exit(0);
         }
         state_num = nfa_state_martix[curr_state][col_index].state_num;
         if (state_num == 0) {
-            // There is no way to go at the root(start) node
+            // There is no way to go at the root(start) node.
             if (char_num_index == 0) {
                 printf("No\n");
                 exit(0);
             }
-            // Backtrack to parent node
+            // Backtrack to parent node.
             else {
                 return ;
             }
@@ -55,12 +57,12 @@ void backtrackNFA(int char_num_index, int char_num, int end_state,
             for (i = 0; i < state_num; i++) {
                 curr_state = nfa_state_martix[curr_state][col_index].state[i];
                 backtrackNFA(char_num_index + 1, char_num, end_state,
-                             input_char, input_char_num, curr_state, 
+                             input_char, input_char_num, curr_state,
                              curr_char + 1, nfa_state_martix);
             }
         }
     }
-    // Traverse all conditions, but there is not a solution
+    // Traverse all conditions, but there is not a solution.
     if (char_num_index == 0) {
         printf("No\n");
         exit(0);

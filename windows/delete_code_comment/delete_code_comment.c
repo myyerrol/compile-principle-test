@@ -89,8 +89,8 @@ int main(int argc, char **argv)
 
         state = dfa_state_transition[state][index];
 
-        // according to comment's requirement, cut off some branchs of state
-        // transition graph that are not meet the conditions
+        // According to comment's requirement, cut off some branchs of state
+        // transition graph that are not meet the conditions.
         if ((state == 0 && ch != '/') ||
             (state == 1 && ch != '*' && ch != '/') ||
             (state == 5) || (state == 7) ||
