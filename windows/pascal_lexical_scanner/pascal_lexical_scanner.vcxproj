@@ -49,12 +49,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>win_flex --header-file=pascal_lexical_scanner_lex.h -o pascal_lexical_scanner_lex.c --wincompat pascal_lexical_scanner.l</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -74,6 +77,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="pascal_lexical_scanner.c" />
+    <ClCompile Include="pascal_lexical_scanner_lex.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pascal_lexical_scanner.l" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pascal_lexical_scanner.h" />
+    <ClInclude Include="pascal_lexical_scanner_lex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

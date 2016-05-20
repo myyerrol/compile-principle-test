@@ -14,4 +14,25 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pascal_lexical_scanner.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_lexical_scanner_lex.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pascal_lexical_scanner.l">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pascal_lexical_scanner_lex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_lexical_scanner.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
