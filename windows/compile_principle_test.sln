@@ -13,6 +13,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "top_down_recursive_descent_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "top_down_forecast_analysis", "top_down_forecast_analysis\top_down_forecast_analysis.vcxproj", "{40BD4F10-A98A-4162-9010-CE4A2D72D32B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal_lexical_scanner", "pascal_lexical_scanner\pascal_lexical_scanner.vcxproj", "{A8097AE4-8E87-4CA4-BA97-593BBDA65618}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal_syntax_parser", "pascal_syntax_parser\pascal_syntax_parser.vcxproj", "{98AADBF3-EA35-48E0-ADD5-D5E97F15882C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal_simple_compiler", "pascal_simple_compiler\pascal_simple_compiler.vcxproj", "{ECD5E837-F528-4073-AB18-80F35FA0BE2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +49,18 @@ Global
 		{40BD4F10-A98A-4162-9010-CE4A2D72D32B}.Debug|Win32.Build.0 = Debug|Win32
 		{40BD4F10-A98A-4162-9010-CE4A2D72D32B}.Release|Win32.ActiveCfg = Release|Win32
 		{40BD4F10-A98A-4162-9010-CE4A2D72D32B}.Release|Win32.Build.0 = Release|Win32
+		{A8097AE4-8E87-4CA4-BA97-593BBDA65618}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A8097AE4-8E87-4CA4-BA97-593BBDA65618}.Debug|Win32.Build.0 = Debug|Win32
+		{A8097AE4-8E87-4CA4-BA97-593BBDA65618}.Release|Win32.ActiveCfg = Release|Win32
+		{A8097AE4-8E87-4CA4-BA97-593BBDA65618}.Release|Win32.Build.0 = Release|Win32
+		{98AADBF3-EA35-48E0-ADD5-D5E97F15882C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{98AADBF3-EA35-48E0-ADD5-D5E97F15882C}.Debug|Win32.Build.0 = Debug|Win32
+		{98AADBF3-EA35-48E0-ADD5-D5E97F15882C}.Release|Win32.ActiveCfg = Release|Win32
+		{98AADBF3-EA35-48E0-ADD5-D5E97F15882C}.Release|Win32.Build.0 = Release|Win32
+		{ECD5E837-F528-4073-AB18-80F35FA0BE2E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ECD5E837-F528-4073-AB18-80F35FA0BE2E}.Debug|Win32.Build.0 = Debug|Win32
+		{ECD5E837-F528-4073-AB18-80F35FA0BE2E}.Release|Win32.ActiveCfg = Release|Win32
+		{ECD5E837-F528-4073-AB18-80F35FA0BE2E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
