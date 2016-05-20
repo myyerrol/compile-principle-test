@@ -33,4 +33,5 @@
 
 *.sdf
 *.opensdf
-*.log
+Debug/
+ipch/
