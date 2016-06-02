@@ -14,4 +14,58 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pascal_simple_compiler.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_handle_symbol_table.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_handle_quaternion.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_handle_syntax_tree.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_test_symbol_table.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_test_quaternion.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_test_syntax_tree.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_simple_compiler_yacc.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_simple_compiler_lex.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pascal_handle_symbol_table.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_handle_quaternion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_handle_syntax_tree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_simple_compiler_yacc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_simple_compiler_lex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pascal_simple_compiler.y">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="pascal_simple_compiler.l">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
 </Project>

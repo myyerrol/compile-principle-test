@@ -49,12 +49,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>win_flex --header-file=pascal_simple_compiler_lex.h -o pascal_simple_compiler_lex.c --wincompat pascal_simple_compiler.l
+win_bison --defines=pascal_simple_compiler_yacc.h -o pascal_simple_compiler_yacc.c  pascal_simple_compiler.y</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -74,6 +78,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="pascal_handle_quaternion.h" />
+    <ClInclude Include="pascal_handle_syntax_tree.h" />
+    <ClInclude Include="pascal_handle_symbol_table.h" />
+    <ClInclude Include="pascal_simple_compiler_lex.h" />
+    <ClInclude Include="pascal_simple_compiler_yacc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pascal_handle_quaternion.c" />
+    <ClCompile Include="pascal_handle_symbol_table.c" />
+    <ClCompile Include="pascal_simple_compiler.c" />
+    <ClCompile Include="pascal_handle_syntax_tree.c" />
+    <ClCompile Include="pascal_simple_compiler_lex.c" />
+    <ClCompile Include="pascal_simple_compiler_yacc.c" />
+    <ClCompile Include="pascal_test_quaternion.c" />
+    <ClCompile Include="pascal_test_symbol_table.c" />
+    <ClCompile Include="pascal_test_syntax_tree.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pascal_simple_compiler.l" />
+    <None Include="pascal_simple_compiler.y" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
