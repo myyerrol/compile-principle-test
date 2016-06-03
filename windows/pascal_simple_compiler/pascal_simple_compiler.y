@@ -8,8 +8,67 @@
 #include "pascal_handle_symbol_table.h"
 #include "pascal_handle_syntax_tree.h"
 
-#define string_size            20
-#define string_with_minus_size 25
+#define STRING_SIZE            20
+#define STRING_WITH_MINUS_SIZE 25
+#define TRUE                   1
+#define FALSE                  0
+
+#define MALLOC_YACC_STRUCT(type)                                         \
+(struct type *)malloc(sizeof(struct type))                               \
+
+#define JUDGE_BOOL_EXPRESSION(expr_l, expr_r, expr_bool, operator, type) \
+do {                                                                     \
+    if (operator.type_opcode == OPCODE_JLT) {                            \
+        if (type(expr_l->value) < type(expr_r->value)) {                 \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JGT) {                       \
+        if (type(expr_l->value) > type(expr_r->value)) {                 \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JLE) {                       \
+        if (type(expr_l->value) <= type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JGE) {                       \
+        if (type(expr_l->value) >= type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JEQ) {                       \
+        if (type(expr_l->value) == type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JNE) {                       \
+        if (type(expr_l->value) != type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+} while (0)
+
+extern int g_quaternion_index;
 
 void performArithmeticOperation(struct Expression *expr_parent_node,
                                 struct Expression *expr_l_son_node,
@@ -21,25 +80,44 @@ int yyerror(char *string);
 %}
 
 %union {
-    int  type;
     char *string;
     struct Statement {
         struct SyntaxTreeNode **ast_node;
     } *statement;
+    struct BoolExpression {
+        int                   true_or_false;
+        int                   chain_true;
+        int                   chain_false;
+        struct SyntaxTreeNode **ast_node;
+    } *bool_expression;
     struct Expression {
+        int                   type;
         int                   index_symbol;
         int                   index_quaternion;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *expression;
     struct Symbol {
+        int                   type;
         int                   index_symbol;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *symbol;
+    struct RelationOperator {
+        int  type_ast;
+        int  type_opcode;
+        char *value;
+    } relation_operator;
 }
 
 %token <string> IDENTIFIER
 %token <string> NUMBER_INTEGER
 %token <string> NUMBER_REAL
+%token          TYPE_INTEGER
+%token          TYPE_REAL
+%token          PROGRAM
 %token          ERROR_STRING
 %token          SEMICOLON
 %token          COMMA
@@ -79,17 +157,31 @@ int yyerror(char *string);
 %left MUL DIV
 %nonassoc UMINUS
 
-%type <string>     Statement
-%type <statement>  AssignmentStatement
-%type <expression> Expression
-%type <symbol>     Variable
-%type <symbol>     Constant
+%type <string>            ProgramDefinition
+%type <string>            SubProgram
+%type <string>            VariableDefinition
+%type <string>            CompleteStatement
+%type <string>            VariableDefinitionList
+%type <string>            VariableDefinitionStatement
+%type <string>            VariableList
+%type <string>            Type
+%type <string>            StatementList
+%type <string>            Statement
+%type <statement>         AssignmentStatement
+%type <string>            IfStatementElse
+%type <string>            IfBoolExpressionThen
+%type <string>            WhileBoolExpressionDo
+%type <bool_expression>   BoolExpression;
+%type <expression>        Expression
+%type <symbol>            Variable
+%type <symbol>            Constant
+%type <relation_operator> RelationOperator
 
 %start ProgramDefinition
 
 %%
 ProgramDefinition
-    : Program IDENTIFIER SEMICOLON SubProgram {
+    : PROGRAM IDENTIFIER SEMICOLON SubProgram {
 
     }
 SubProgram
@@ -112,7 +204,10 @@ VariableDefinitionStatement
 
     }
 Type
-    : TYPE_INTEGER | TYPE_REAL {
+    : TYPE_INTEGER {
+
+    }
+    | TYPE_REAL {
 
     }
 VariableList
@@ -152,19 +247,10 @@ CompleteStatement
     }
 AssignmentStatement
     : Variable ASSIGN Expression {
-        int  type_temp;
-        char *value_temp;
-
-        value_temp = getSymbolNodeValue($3->index_symbol);
-        type_temp  = getSymbolNodeType($3->index_symbol);
-
-        ModifyVariableNode($1->index_symbol, type_temp, value_temp);
-        generateQuaternionNode($3->index_symbol,
-                               0,
-                               $1->index_symbol,
+        ModifyVariableNode($1->index_symbol, $3->type, $3->value);
+        generateQuaternionNode($3->index_symbol, 0, $1->index_symbol,
                                OPCODE_ASSIGN);
-
-        $$ = (struct Statement *)malloc(sizeof(struct Statement));
+        $$ = MALLOC_YACC_STRUCT(Statement);
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_ASSIGN, ":=");
@@ -185,47 +271,7 @@ WhileBoolExpressionDo
     }
 Expression
     : Expression ADD Expression {
-        int    index_temp;
-        int    type_a, type_b;
-        int    result_type;
-        int    result_int;
-        double result_real;
-        char   result[string_size];
-        char   *value_a, *value_b;
-
-        type_a  = getSymbolNodeType($1->index_symbol);
-        type_b  = getSymbolNodeType($3->index_symbol);
-        value_a = getSymbolNodeValue($1->index_symbol);
-        value_b = getSymbolNodeValue($3->index_symbol);
-
-        if (type_a == TYPE_INTEGER && type_b == TYPE_INTEGER) {
-            result_int = atoi(value_a) + atoi(value_b);
-            sprintf(result, "%d", result_int);
-            result_type = TYPE_INTEGER;
-        }
-        else if (type_a == TYPE_REAL && type_b == TYPE_REAL) {
-            result_real = atof(value_a) + atof(value_b);
-            sprintf(result, "%lf", result_real);
-            result_type = TYPE_REAL;
-        }
-        else {
-            printf("Warning, \'%s\' type mismatch \'%s\'!", value_a, value_b);
-            exit(0);
-        }
-
-        index_temp = generateVariableNode(result_type, VARIABLE_TEMP, result,
-                                          "temp");
-        $$ = (struct Expression *)malloc(sizeof(struct Expression));
-        $$->index_symbol = index_temp;
-        $$->index_quaternion = generateQuaternionNode($1->index_symbol,
-                                                      $3->index_symbol,
-                                                      index_temp,
-                                                      OPCODE_ADD);
-        $$->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode($$->ast_node);
-        setSyntaxTreeNode(*($$->ast_node), NODE_ADD, "+");
-        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        performArithmeticOperation($$, $1, $3, OPCODE_SUB, NODE_SUB, "+");
     }
     | Expression SUB Expression {
         performArithmeticOperation($$, $1, $3, OPCODE_SUB, NODE_SUB, "-");
@@ -241,26 +287,21 @@ Expression
     }
     | '-' Expression %prec UMINUS {
         int  index_temp;
-        int  type_temp;
-        char result[string_with_minus_size] = "-";
-        char *value_temp;
+        char result[STRING_WITH_MINUS_SIZE] = "-";
 
-        value_temp = getSymbolNodeValue($2->index_symbol);
-        type_temp = getSymbolNodeType($2->index_symbol);
-        strcat(result, value_temp);
+        strcat(result, $2->value);
 
         if ($2->index_symbol > 0) {
-            index_temp = generateConstantNode(type_temp, result);
+            index_temp = generateConstantNode($2->type, result);
         }
         else {
-            index_temp = generateVariableNode(type_temp, VARIABLE_TEMP, result,
+            index_temp = generateVariableNode($2->type, VARIABLE_TEMP, result,
                                               "temp");
         }
 
-        $$ = (struct Expression *)malloc(sizeof(struct Expression));
+        $$ = MALLOC_YACC_STRUCT(Expression);
         $$->index_symbol = index_temp;
-        $$->index_quaternion = generateQuaternionNode($2->index_symbol,
-                                                      0,
+        $$->index_quaternion = generateQuaternionNode($2->index_symbol, 0,
                                                       $$->index_symbol,
                                                       OPCODE_MINUS);
         $$->ast_node = createSyntaxTreeNodePointer();
@@ -268,60 +309,137 @@ Expression
         setSyntaxTreeNode(*($$->ast_node), NODE_NULL, result);
     }
     | Variable {
-        $$ = (struct Expression *)malloc(sizeof(struct Expression));
+        $$ = MALLOC_YACC_STRUCT(Expression);
         $$->index_symbol = $1->index_symbol;
+        $$->type  = $1->type;
+        $$->value = $1->value;
+        $$->name  = $1->name;
         $$->index_quaternion = 0;
         $$->ast_node = $1->ast_node;
     }
     | Constant {
-        $$ = (struct Expression *)malloc(sizeof(struct Expression));
+        $$ = MALLOC_YACC_STRUCT(Expression);
         $$->index_symbol = $1->index_symbol;
+        $$->type  = $1->type;
+        $$->value = $1->value;
+        $$->name  = $1->name;
         $$->index_quaternion = 0;
         $$->ast_node = $1->ast_node;
     }
 BoolExpression
     : Expression RelationOperator Expression {
+        if ($1->type == TYPE_INTEGER && $3->type == TYPE_INTEGER) {
+            JUDGE_BOOL_EXPRESSION($1, $3, $$, $2, atoi);
+        }
+        else if ($1->type == TYPE_REAL && $3->type == TYPE_REAL) {
+            JUDGE_BOOL_EXPRESSION($1, $3, $$, $2, atof);
+        }
+        else {
+            printf("Warning, \'%s\' type mismatch \'%s\' type!", $1->value,
+                $3->value);
+            exit(0);
+        }
+
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->chain_true  = g_quaternion_index;
+        $$->chain_false = g_quaternion_index + 1;
+        generateQuaternionNode($1->index_symbol, $3->index_symbol, 0,
+                               $2.type_opcode);
+        generateQuaternionNode(0, 0, 0, OPCODE_JMP);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), $2.type_ast, $2.value);
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
     }
     | BoolExpression AND {
+
     }
     | BoolExpression OR {
     }
     | NOT BoolExpression {
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->true_or_false = ($2->true_or_false == TRUE) ? FALSE : TRUE;
+        $$->chain_true = $2->chain_false;
+        $$->chain_false = $2->chain_true;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_NOT, "not");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     | LP BoolExpression RP {
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->true_or_false = $2->true_or_false;
+        $$->chain_true = $2->chain_true;
+        $$->chain_false = $2->chain_false;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_LP_RP, "()");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
 Variable
     : IDENTIFIER {
-        $$ = (struct Symbol *)malloc(sizeof(struct Symbol));
+        $$ = MALLOC_YACC_STRUCT(Symbol);
         $$->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER, NULL, $1);
+        $$->type  = TYPE_NULL;
+        $$->value = NULL;
+        $$->name  = $1;
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_NULL, $1);
     }
 Constant
     : NUMBER_INTEGER {
-        $$ = (struct Symbol *)malloc(sizeof(struct Symbol));
+        $$ = MALLOC_YACC_STRUCT(Symbol);
         $$->index_symbol = generateConstantNode(TYPE_INTEGER, $1);
-        $$->ast_node =
-            (struct SyntaxTreeNode **)malloc(sizeof(struct SyntaxTreeNode));
+        $$->type  = TYPE_INTEGER;
+        $$->value = $1;
+        $$->name  = NULL;
+        $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_INTEGER, $1);
     }
     | NUMBER_REAL {
-        $$ = (struct Symbol *)malloc(sizeof(struct Symbol));
+        $$ = MALLOC_YACC_STRUCT(Symbol);
         $$->index_symbol = generateConstantNode(TYPE_REAL, $1);
-        $$->ast_node =
-            (struct SyntaxTreeNode **)malloc(sizeof(struct SyntaxTreeNode));
+        $$->type  = TYPE_REAL;
+        $$->value = $1;
+        $$->name  = NULL;
+        $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_REAL, $1);
     }
 RelationOperator
-    : LT {}
-    | GT {}
-    | LE {}
-    | GE {}
-    | EQ {}
-    | NE {}
+    : LT {
+        $$.type_ast    = NODE_LT;
+        $$.type_opcode = OPCODE_JLT;
+        $$.value       = "LT";
+    }
+    | GT {
+        $$.type_ast    = NODE_GT;
+        $$.type_opcode = OPCODE_JGT;
+        $$.value       = "GT";
+    }
+    | LE {
+        $$.type_ast    = NODE_LE;
+        $$.type_opcode = OPCODE_JLE;
+        $$.value       = "LE";
+    }
+    | GE {
+        $$.type_ast    = NODE_GE;
+        $$.type_opcode = OPCODE_JGE;
+        $$.value       = "GE";
+    }
+    | EQ {
+        $$.type_ast    = NODE_EQ;
+        $$.type_opcode = OPCODE_JEQ;
+        $$.value       = "EQ";
+    }
+    | NE {
+        $$.type_ast    = NODE_NE;
+        $$.type_opcode = OPCODE_JNE;
+        $$.value       = "NE";
+    }
 
 %%
 
@@ -337,7 +455,7 @@ void performArithmeticOperation(struct Expression *expr_parent_node,
     int    result_type;
     int    result_int;
     double result_real;
-    char   *result = NULL;
+    char   result[STRING_SIZE];
     char   *value_a, *value_b;
 
     type_a  = getSymbolNodeType(expr_l_son_node->index_symbol);
@@ -356,13 +474,13 @@ void performArithmeticOperation(struct Expression *expr_parent_node,
         result_type = TYPE_REAL;
     }
     else {
-        printf("Warning, \'%s\' type mismatch \'%s\'!", value_a, value_b);
+        printf("Warning, \'%s\' type mismatch \'%s\' type!", value_a, value_b);
         exit(0);
     }
 
     index_temp = generateVariableNode(result_type, VARIABLE_TEMP, result,
                                       "temp");
-    expr_parent_node = (struct Expression *)malloc(sizeof(struct Expression));
+    expr_parent_node = MALLOC_YACC_STRUCT(Expression);
     expr_parent_node->index_symbol = index_temp;
     expr_parent_node->index_quaternion = generateQuaternionNode(
         expr_l_son_node->index_symbol,

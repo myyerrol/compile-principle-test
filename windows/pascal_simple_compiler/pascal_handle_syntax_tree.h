@@ -24,6 +24,16 @@
 #define NODE_DIV                       757
 #define NODE_VARIABLE                  758
 #define NODE_ASSIGN                    759
+#define NODE_LT                        760
+#define NODE_GT                        761
+#define NODE_LE                        762
+#define NODE_GE                        763
+#define NODE_EQ                        764
+#define NODE_NE                        765
+#define NODE_NOT                       766
+#define NODE_LP_RP                     767
+#define NODE_LP                        768
+#define NODE_RP                        769
 
 #define SPACE_POSITION                 6
 #define SPACE_HALF_LENGTH              4
@@ -31,10 +41,10 @@
 #define PRINT_SPACE(count)          \
 do {                                \
     int i;                          \
-    for (i = 0; i < (count); i++) { \
+    for (i = 0; i < count; i++) {   \
         printf(" ");                \
     }                               \
-} while (0);
+} while (0)
 
 typedef struct SyntaxTreeNode {
     int                   type;

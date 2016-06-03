@@ -74,8 +74,67 @@
 #include "pascal_handle_symbol_table.h"
 #include "pascal_handle_syntax_tree.h"
 
-#define string_size            20
-#define string_with_minus_size 25
+#define STRING_SIZE            20
+#define STRING_WITH_MINUS_SIZE 25
+#define TRUE                   1
+#define FALSE                  0
+
+#define MALLOC_YACC_STRUCT(type)                                         \
+(struct type *)malloc(sizeof(struct type))                               \
+
+#define JUDGE_BOOL_EXPRESSION(expr_l, expr_r, expr_bool, operator, type) \
+do {                                                                     \
+    if (operator.type_opcode == OPCODE_JLT) {                            \
+        if (type(expr_l->value) < type(expr_r->value)) {                 \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JGT) {                       \
+        if (type(expr_l->value) > type(expr_r->value)) {                 \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JLE) {                       \
+        if (type(expr_l->value) <= type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JGE) {                       \
+        if (type(expr_l->value) >= type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JEQ) {                       \
+        if (type(expr_l->value) == type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+    else if (operator.type_opcode == OPCODE_JNE) {                       \
+        if (type(expr_l->value) != type(expr_r->value)) {                \
+            expr_bool->true_or_false = TRUE;                             \
+        }                                                                \
+        else {                                                           \
+            expr_bool->true_or_false = FALSE;                            \
+        }                                                                \
+    }                                                                    \
+} while (0)
+
+extern int g_quaternion_index;
 
 void performArithmeticOperation(struct Expression *expr_parent_node,
                                 struct Expression *expr_l_son_node,
@@ -86,7 +145,7 @@ void performArithmeticOperation(struct Expression *expr_parent_node,
 int yyerror(char *string);
 
 /* Line 371 of yacc.c  */
-#line 90 "pascal_simple_compiler_yacc.c"
+#line 149 "pascal_simple_compiler_yacc.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -125,37 +184,40 @@ extern int yydebug;
      IDENTIFIER = 258,
      NUMBER_INTEGER = 259,
      NUMBER_REAL = 260,
-     ERROR_STRING = 261,
-     SEMICOLON = 262,
-     COMMA = 263,
-     COLON = 264,
-     DOT = 265,
-     INTEGER = 266,
-     REAL = 267,
-     STATEMENT_BEGIN = 268,
-     STATEMENT_END = 269,
-     ASSIGN = 270,
-     IF = 271,
-     ELSE = 272,
-     THEN = 273,
-     WHILE = 274,
-     DO = 275,
-     ADD = 276,
-     SUB = 277,
-     MUL = 278,
-     DIV = 279,
-     LP = 280,
-     RP = 281,
-     AND = 282,
-     OR = 283,
-     NOT = 284,
-     LT = 285,
-     GT = 286,
-     LE = 287,
-     GE = 288,
-     EQ = 289,
-     NE = 290,
-     UMINUS = 291
+     TYPE_INTEGER = 261,
+     TYPE_REAL = 262,
+     PROGRAM = 263,
+     ERROR_STRING = 264,
+     SEMICOLON = 265,
+     COMMA = 266,
+     COLON = 267,
+     DOT = 268,
+     INTEGER = 269,
+     REAL = 270,
+     STATEMENT_BEGIN = 271,
+     STATEMENT_END = 272,
+     ASSIGN = 273,
+     IF = 274,
+     ELSE = 275,
+     THEN = 276,
+     WHILE = 277,
+     DO = 278,
+     ADD = 279,
+     SUB = 280,
+     MUL = 281,
+     DIV = 282,
+     LP = 283,
+     RP = 284,
+     AND = 285,
+     OR = 286,
+     NOT = 287,
+     LT = 288,
+     GT = 289,
+     LE = 290,
+     GE = 291,
+     EQ = 292,
+     NE = 293,
+     UMINUS = 294
    };
 #endif
 
@@ -164,26 +226,42 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 23 "pascal_simple_compiler.y"
+#line 82 "pascal_simple_compiler.y"
 
-    int  type;
     char *string;
     struct Statement {
         struct SyntaxTreeNode **ast_node;
     } *statement;
+    struct BoolExpression {
+        int                   true_or_false;
+        int                   chain_true;
+        int                   chain_false;
+        struct SyntaxTreeNode **ast_node;
+    } *bool_expression;
     struct Expression {
+        int                   type;
         int                   index_symbol;
         int                   index_quaternion;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *expression;
     struct Symbol {
+        int                   type;
         int                   index_symbol;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *symbol;
+    struct RelationOperator {
+        int  type_ast;
+        int  type_opcode;
+        char *value;
+    } relation_operator;
 
 
 /* Line 387 of yacc.c  */
-#line 187 "pascal_simple_compiler_yacc.c"
+#line 265 "pascal_simple_compiler_yacc.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -211,7 +289,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 215 "pascal_simple_compiler_yacc.c"
+#line 293 "pascal_simple_compiler_yacc.c"
 
 #ifdef short
 # undef short
@@ -429,22 +507,22 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  5
+#define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   34
+#define YYLAST   100
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  38
+#define YYNTOKENS  41
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  6
+#define YYNNTS  20
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  14
+#define YYNRULES  46
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  25
+#define YYNSTATES  83
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   291
+#define YYMAXUTOK   294
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -456,7 +534,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,    37,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,    40,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -481,7 +559,7 @@ static const yytype_uint8 yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36
+      35,    36,    37,    38,    39
 };
 
 #if YYDEBUG
@@ -489,25 +567,40 @@ static const yytype_uint8 yytranslate[] =
    YYRHS.  */
 static const yytype_uint8 yyprhs[] =
 {
-       0,     0,     3,     5,     9,    13,    17,    21,    25,    29,
-      32,    34,    36,    38,    40
+       0,     0,     3,     8,    11,    15,    19,    21,    25,    27,
+      29,    33,    35,    39,    41,    43,    46,    49,    52,    54,
+      55,    60,    64,    68,    72,    76,    80,    84,    88,    92,
+      96,    99,   101,   103,   107,   110,   113,   116,   120,   122,
+     124,   126,   128,   130,   132,   134,   136
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      39,     0,    -1,    40,    -1,    42,    15,    41,    -1,    41,
-      21,    41,    -1,    41,    22,    41,    -1,    41,    23,    41,
-      -1,    41,    24,    41,    -1,    25,    41,    26,    -1,    37,
-      41,    -1,    42,    -1,    43,    -1,     3,    -1,     4,    -1,
-       5,    -1
+      42,     0,    -1,     8,     3,    10,    43,    -1,    44,    51,
+      -1,    58,    45,    10,    -1,    46,    10,    45,    -1,    46,
+      -1,    48,    12,    47,    -1,     6,    -1,     7,    -1,    58,
+      11,    48,    -1,    58,    -1,    50,    10,    49,    -1,    50,
+      -1,    52,    -1,    53,    50,    -1,    54,    50,    -1,    55,
+      50,    -1,    51,    -1,    -1,    16,    49,    17,    13,    -1,
+      58,    18,    56,    -1,    54,    50,    20,    -1,    19,    57,
+      21,    -1,    22,    57,    23,    -1,    56,    24,    56,    -1,
+      56,    25,    56,    -1,    56,    26,    56,    -1,    56,    27,
+      56,    -1,    28,    56,    29,    -1,    40,    56,    -1,    58,
+      -1,    59,    -1,    56,    60,    56,    -1,    57,    30,    -1,
+      57,    31,    -1,    32,    57,    -1,    28,    57,    29,    -1,
+       3,    -1,     4,    -1,     5,    -1,    33,    -1,    34,    -1,
+      35,    -1,    36,    -1,    37,    -1,    38,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
-       0,    90,    90,    93,   114,   157,   160,   163,   166,   169,
-     197,   203,   210,   218,   226
+       0,   184,   184,   188,   192,   196,   199,   203,   207,   210,
+     214,   217,   221,   224,   228,   231,   234,   237,   240,   243,
+     245,   249,   261,   265,   269,   273,   276,   279,   282,   285,
+     288,   311,   320,   330,   355,   358,   360,   370,   381,   392,
+     402,   413,   418,   423,   428,   433,   438
 };
 #endif
 
@@ -517,12 +610,17 @@ static const yytype_uint8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "IDENTIFIER", "NUMBER_INTEGER",
-  "NUMBER_REAL", "ERROR_STRING", "SEMICOLON", "COMMA", "COLON", "DOT",
-  "INTEGER", "REAL", "STATEMENT_BEGIN", "STATEMENT_END", "ASSIGN", "IF",
-  "ELSE", "THEN", "WHILE", "DO", "ADD", "SUB", "MUL", "DIV", "LP", "RP",
-  "AND", "OR", "NOT", "LT", "GT", "LE", "GE", "EQ", "NE", "UMINUS", "'-'",
-  "$accept", "Statement", "AssignmentStatement", "Expression", "Variable",
-  "Constant", YY_NULL
+  "NUMBER_REAL", "TYPE_INTEGER", "TYPE_REAL", "PROGRAM", "ERROR_STRING",
+  "SEMICOLON", "COMMA", "COLON", "DOT", "INTEGER", "REAL",
+  "STATEMENT_BEGIN", "STATEMENT_END", "ASSIGN", "IF", "ELSE", "THEN",
+  "WHILE", "DO", "ADD", "SUB", "MUL", "DIV", "LP", "RP", "AND", "OR",
+  "NOT", "LT", "GT", "LE", "GE", "EQ", "NE", "UMINUS", "'-'", "$accept",
+  "ProgramDefinition", "SubProgram", "VariableDefinition",
+  "VariableDefinitionList", "VariableDefinitionStatement", "Type",
+  "VariableList", "StatementList", "Statement", "CompleteStatement",
+  "AssignmentStatement", "IfStatementElse", "IfBoolExpressionThen",
+  "WhileBoolExpressionDo", "Expression", "BoolExpression", "Variable",
+  "Constant", "RelationOperator", YY_NULL
 };
 #endif
 
@@ -534,22 +632,29 @@ static const yytype_uint16 yytoknum[] =
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,    45
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+      45
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    38,    39,    40,    41,    41,    41,    41,    41,    41,
-      41,    41,    42,    43,    43
+       0,    41,    42,    43,    44,    45,    45,    46,    47,    47,
+      48,    48,    49,    49,    50,    50,    50,    50,    50,    50,
+      51,    52,    53,    54,    55,    56,    56,    56,    56,    56,
+      56,    56,    56,    57,    57,    57,    57,    57,    58,    59,
+      59,    60,    60,    60,    60,    60,    60
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     3,     3,     3,     3,     3,     3,     2,
-       1,     1,     1,     1,     1
+       0,     2,     4,     2,     3,     3,     1,     3,     1,     1,
+       3,     1,     3,     1,     1,     2,     2,     2,     1,     0,
+       4,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+       2,     1,     1,     3,     2,     2,     2,     3,     1,     1,
+       1,     1,     1,     1,     1,     1,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default reduction number in state STATE-NUM.
@@ -557,31 +662,45 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    12,     0,     2,     0,     1,     0,    13,    14,     0,
-       0,     3,    10,    11,     0,     9,     0,     0,     0,     0,
-       8,     4,     5,     6,     7
+       0,     0,     0,     0,     1,     0,    38,     2,     0,     0,
+      19,     3,     0,     0,     0,    11,     0,     0,     0,    13,
+      18,    14,    19,    19,    19,     0,     4,     0,     0,     0,
+      39,    40,     0,     0,     0,     0,     0,    31,    32,     0,
+       0,    19,    15,    16,    17,     0,     5,     8,     9,     7,
+      10,     0,     0,    36,     0,    30,     0,     0,     0,     0,
+      41,    42,    43,    44,    45,    46,     0,    23,    34,    35,
+      24,    20,    12,    22,    21,    29,    37,     0,    25,    26,
+      27,    28,    33
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     3,    11,    12,    13
+      -1,     2,     7,     8,    12,    13,    49,    14,    18,    19,
+      20,    21,    22,    23,    24,    35,    36,    37,    38,    66
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -17
+#define YYPACT_NINF -18
 static const yytype_int8 yypact[] =
 {
-       6,   -17,    18,   -17,     5,   -17,    -3,   -17,   -17,    -3,
-      -3,   -16,   -17,   -17,    -7,   -17,    -3,    -3,    -3,    -3,
-     -17,     0,     0,   -17,   -17
+       5,    14,    20,    12,   -18,    23,   -18,   -18,    19,    23,
+       8,   -18,    29,    32,    37,    51,    -3,    -3,    64,    83,
+     -18,   -18,     8,     8,     8,    76,   -18,    23,    47,    23,
+     -18,   -18,    -3,    -3,     0,    49,   -15,   -18,   -18,    21,
+      82,     8,   -18,    77,   -18,     0,   -18,   -18,   -18,   -18,
+     -18,    34,    35,   -18,     0,   -18,     0,     0,     0,     0,
+     -18,   -18,   -18,   -18,   -18,   -18,     0,   -18,   -18,   -18,
+     -18,   -18,   -18,   -18,    53,   -18,   -18,   -17,    65,    65,
+     -18,   -18,    53
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -17,   -17,   -17,    -6,    21,   -17
+     -18,   -18,   -18,   -18,    69,   -18,   -18,    70,    57,    66,
+      92,   -18,   -18,   -18,   -18,   -11,    24,     9,   -18,   -18
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -590,33 +709,53 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-       1,     7,     8,    14,    15,    16,    17,    18,    19,     1,
-      21,    22,    23,    24,    16,    17,    18,    19,     5,    20,
-       6,     4,     9,    18,    19,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    10
+       6,    30,    31,     6,    30,    31,    67,    56,    57,    58,
+      59,     6,    75,     1,     9,    68,    69,     3,    15,    25,
+       4,    51,     5,    55,    10,    32,     6,    16,    54,    33,
+      17,    25,    25,    25,    74,    10,    15,    34,    15,    26,
+      34,    39,    27,    77,    70,    78,    79,    80,    81,    28,
+      25,    68,    69,    47,    48,    82,    52,    53,    56,    57,
+      58,    59,    29,    75,    76,    68,    69,    60,    61,    62,
+      63,    64,    65,    56,    57,    58,    59,    56,    57,    58,
+      59,    40,    60,    61,    62,    63,    64,    65,    42,    43,
+      44,    58,    59,    41,    45,    71,    46,    73,    72,    50,
+      11
 };
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-17)))
+  (!!((Yystate) == (-18)))
 
 #define yytable_value_is_error(Yytable_value) \
   YYID (0)
 
-static const yytype_int8 yycheck[] =
+static const yytype_uint8 yycheck[] =
 {
-       3,     4,     5,     9,    10,    21,    22,    23,    24,     3,
-      16,    17,    18,    19,    21,    22,    23,    24,     0,    26,
-      15,     0,    25,    23,    24,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    37
+       3,     4,     5,     3,     4,     5,    21,    24,    25,    26,
+      27,     3,    29,     8,     5,    30,    31,     3,     9,    10,
+       0,    32,    10,    34,    16,    28,     3,    19,    28,    32,
+      22,    22,    23,    24,    45,    16,    27,    40,    29,    10,
+      40,    17,    10,    54,    23,    56,    57,    58,    59,    12,
+      41,    30,    31,     6,     7,    66,    32,    33,    24,    25,
+      26,    27,    11,    29,    29,    30,    31,    33,    34,    35,
+      36,    37,    38,    24,    25,    26,    27,    24,    25,    26,
+      27,    17,    33,    34,    35,    36,    37,    38,    22,    23,
+      24,    26,    27,    10,    18,    13,    27,    20,    41,    29,
+       8
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     3,    39,    40,    42,     0,    15,     4,     5,    25,
-      37,    41,    42,    43,    41,    41,    21,    22,    23,    24,
-      26,    41,    41,    41,    41
+       0,     8,    42,     3,     0,    10,     3,    43,    44,    58,
+      16,    51,    45,    46,    48,    58,    19,    22,    49,    50,
+      51,    52,    53,    54,    55,    58,    10,    10,    12,    11,
+       4,     5,    28,    32,    40,    56,    57,    58,    59,    57,
+      17,    10,    50,    50,    50,    18,    45,     6,     7,    47,
+      48,    56,    57,    57,    28,    56,    24,    25,    26,    27,
+      33,    34,    35,    36,    37,    38,    60,    21,    30,    31,
+      23,    13,    49,    20,    56,    29,    29,    56,    56,    56,
+      56,    56,    56
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1418,28 +1557,156 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 90 "pascal_simple_compiler.y"
+#line 184 "pascal_simple_compiler.y"
     {
+
     }
     break;
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 93 "pascal_simple_compiler.y"
+#line 188 "pascal_simple_compiler.y"
     {
-        int  type_temp;
-        char *value_temp;
 
-        value_temp = getSymbolNodeValue((yyvsp[(3) - (3)].expression)->index_symbol);
-        type_temp  = getSymbolNodeType((yyvsp[(3) - (3)].expression)->index_symbol);
+    }
+    break;
 
-        ModifyVariableNode((yyvsp[(1) - (3)].symbol)->index_symbol, type_temp, value_temp);
-        generateQuaternionNode((yyvsp[(3) - (3)].expression)->index_symbol,
-                               0,
-                               (yyvsp[(1) - (3)].symbol)->index_symbol,
+  case 4:
+/* Line 1792 of yacc.c  */
+#line 192 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 5:
+/* Line 1792 of yacc.c  */
+#line 196 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 6:
+/* Line 1792 of yacc.c  */
+#line 199 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 7:
+/* Line 1792 of yacc.c  */
+#line 203 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 8:
+/* Line 1792 of yacc.c  */
+#line 207 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 9:
+/* Line 1792 of yacc.c  */
+#line 210 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 10:
+/* Line 1792 of yacc.c  */
+#line 214 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 11:
+/* Line 1792 of yacc.c  */
+#line 217 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 12:
+/* Line 1792 of yacc.c  */
+#line 221 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 13:
+/* Line 1792 of yacc.c  */
+#line 224 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 14:
+/* Line 1792 of yacc.c  */
+#line 228 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 15:
+/* Line 1792 of yacc.c  */
+#line 231 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 16:
+/* Line 1792 of yacc.c  */
+#line 234 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 17:
+/* Line 1792 of yacc.c  */
+#line 237 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 18:
+/* Line 1792 of yacc.c  */
+#line 240 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 20:
+/* Line 1792 of yacc.c  */
+#line 245 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 21:
+/* Line 1792 of yacc.c  */
+#line 249 "pascal_simple_compiler.y"
+    {
+        ModifyVariableNode((yyvsp[(1) - (3)].symbol)->index_symbol, (yyvsp[(3) - (3)].expression)->type, (yyvsp[(3) - (3)].expression)->value);
+        generateQuaternionNode((yyvsp[(3) - (3)].expression)->index_symbol, 0, (yyvsp[(1) - (3)].symbol)->index_symbol,
                                OPCODE_ASSIGN);
-
-        (yyval.statement) = (struct Statement *)malloc(sizeof(struct Statement));
+        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
         (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.statement)->ast_node);
         setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_ASSIGN, ":=");
@@ -1448,111 +1715,90 @@ yyreduce:
     }
     break;
 
-  case 4:
+  case 22:
 /* Line 1792 of yacc.c  */
-#line 114 "pascal_simple_compiler.y"
+#line 261 "pascal_simple_compiler.y"
     {
-        int    index_temp;
-        int    type_a, type_b;
-        int    result_type;
-        int    result_int;
-        double result_real;
-        char   result[string_size];
-        char   *value_a, *value_b;
 
-        type_a  = getSymbolNodeType((yyvsp[(1) - (3)].expression)->index_symbol);
-        type_b  = getSymbolNodeType((yyvsp[(3) - (3)].expression)->index_symbol);
-        value_a = getSymbolNodeValue((yyvsp[(1) - (3)].expression)->index_symbol);
-        value_b = getSymbolNodeValue((yyvsp[(3) - (3)].expression)->index_symbol);
-
-        if (type_a == TYPE_INTEGER && type_b == TYPE_INTEGER) {
-            result_int = atoi(value_a) + atoi(value_b);
-            sprintf(result, "%d", result_int);
-            result_type = TYPE_INTEGER;
-        }
-        else if (type_a == TYPE_REAL && type_b == TYPE_REAL) {
-            result_real = atof(value_a) + atof(value_b);
-            sprintf(result, "%lf", result_real);
-            result_type = TYPE_REAL;
-        }
-        else {
-            printf("Warning, \'%s\' type mismatch \'%s\'!", value_a, value_b);
-            exit(0);
-        }
-
-        index_temp = generateVariableNode(result_type, VARIABLE_TEMP, result,
-                                          "temp");
-        (yyval.expression) = (struct Expression *)malloc(sizeof(struct Expression));
-        (yyval.expression)->index_symbol = index_temp;
-        (yyval.expression)->index_quaternion = generateQuaternionNode((yyvsp[(1) - (3)].expression)->index_symbol,
-                                                      (yyvsp[(3) - (3)].expression)->index_symbol,
-                                                      index_temp,
-                                                      OPCODE_ADD);
-        (yyval.expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.expression)->ast_node), NODE_ADD, "+");
-        addSyntaxTreeSonNode(*((yyval.expression)->ast_node), *((yyvsp[(1) - (3)].expression)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.expression)->ast_node), *((yyvsp[(3) - (3)].expression)->ast_node));
     }
     break;
 
-  case 5:
+  case 23:
 /* Line 1792 of yacc.c  */
-#line 157 "pascal_simple_compiler.y"
+#line 265 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 24:
+/* Line 1792 of yacc.c  */
+#line 269 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 25:
+/* Line 1792 of yacc.c  */
+#line 273 "pascal_simple_compiler.y"
+    {
+        performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_SUB, NODE_SUB, "+");
+    }
+    break;
+
+  case 26:
+/* Line 1792 of yacc.c  */
+#line 276 "pascal_simple_compiler.y"
     {
         performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_SUB, NODE_SUB, "-");
     }
     break;
 
-  case 6:
+  case 27:
 /* Line 1792 of yacc.c  */
-#line 160 "pascal_simple_compiler.y"
+#line 279 "pascal_simple_compiler.y"
     {
         performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_MUL, NODE_MUL, "*");
     }
     break;
 
-  case 7:
+  case 28:
 /* Line 1792 of yacc.c  */
-#line 163 "pascal_simple_compiler.y"
+#line 282 "pascal_simple_compiler.y"
     {
         performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_DIV, NODE_DIV, "/");
     }
     break;
 
-  case 8:
+  case 29:
 /* Line 1792 of yacc.c  */
-#line 166 "pascal_simple_compiler.y"
+#line 285 "pascal_simple_compiler.y"
     {
         (yyval.expression) = (yyvsp[(2) - (3)].expression);
     }
     break;
 
-  case 9:
+  case 30:
 /* Line 1792 of yacc.c  */
-#line 169 "pascal_simple_compiler.y"
+#line 288 "pascal_simple_compiler.y"
     {
         int  index_temp;
-        int  type_temp;
-        char result[string_with_minus_size] = "-";
-        char *value_temp;
+        char result[STRING_WITH_MINUS_SIZE] = "-";
 
-        value_temp = getSymbolNodeValue((yyvsp[(2) - (2)].expression)->index_symbol);
-        type_temp = getSymbolNodeType((yyvsp[(2) - (2)].expression)->index_symbol);
-        strcat(result, value_temp);
+        strcat(result, (yyvsp[(2) - (2)].expression)->value);
 
         if ((yyvsp[(2) - (2)].expression)->index_symbol > 0) {
-            index_temp = generateConstantNode(type_temp, result);
+            index_temp = generateConstantNode((yyvsp[(2) - (2)].expression)->type, result);
         }
         else {
-            index_temp = generateVariableNode(type_temp, VARIABLE_TEMP, result,
+            index_temp = generateVariableNode((yyvsp[(2) - (2)].expression)->type, VARIABLE_TEMP, result,
                                               "temp");
         }
 
-        (yyval.expression) = (struct Expression *)malloc(sizeof(struct Expression));
+        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
         (yyval.expression)->index_symbol = index_temp;
-        (yyval.expression)->index_quaternion = generateQuaternionNode((yyvsp[(2) - (2)].expression)->index_symbol,
-                                                      0,
+        (yyval.expression)->index_quaternion = generateQuaternionNode((yyvsp[(2) - (2)].expression)->index_symbol, 0,
                                                       (yyval.expression)->index_symbol,
                                                       OPCODE_MINUS);
         (yyval.expression)->ast_node = createSyntaxTreeNodePointer();
@@ -1561,69 +1807,217 @@ yyreduce:
     }
     break;
 
-  case 10:
+  case 31:
 /* Line 1792 of yacc.c  */
-#line 197 "pascal_simple_compiler.y"
+#line 311 "pascal_simple_compiler.y"
     {
-        (yyval.expression) = (struct Expression *)malloc(sizeof(struct Expression));
+        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
         (yyval.expression)->index_symbol = (yyvsp[(1) - (1)].symbol)->index_symbol;
+        (yyval.expression)->type  = (yyvsp[(1) - (1)].symbol)->type;
+        (yyval.expression)->value = (yyvsp[(1) - (1)].symbol)->value;
+        (yyval.expression)->name  = (yyvsp[(1) - (1)].symbol)->name;
         (yyval.expression)->index_quaternion = 0;
         (yyval.expression)->ast_node = (yyvsp[(1) - (1)].symbol)->ast_node;
     }
     break;
 
-  case 11:
+  case 32:
 /* Line 1792 of yacc.c  */
-#line 203 "pascal_simple_compiler.y"
+#line 320 "pascal_simple_compiler.y"
     {
-        (yyval.expression) = (struct Expression *)malloc(sizeof(struct Expression));
+        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
         (yyval.expression)->index_symbol = (yyvsp[(1) - (1)].symbol)->index_symbol;
+        (yyval.expression)->type  = (yyvsp[(1) - (1)].symbol)->type;
+        (yyval.expression)->value = (yyvsp[(1) - (1)].symbol)->value;
+        (yyval.expression)->name  = (yyvsp[(1) - (1)].symbol)->name;
         (yyval.expression)->index_quaternion = 0;
         (yyval.expression)->ast_node = (yyvsp[(1) - (1)].symbol)->ast_node;
     }
     break;
 
-  case 12:
+  case 33:
 /* Line 1792 of yacc.c  */
-#line 210 "pascal_simple_compiler.y"
+#line 330 "pascal_simple_compiler.y"
     {
-        (yyval.symbol) = (struct Symbol *)malloc(sizeof(struct Symbol));
+        if ((yyvsp[(1) - (3)].expression)->type == TYPE_INTEGER && (yyvsp[(3) - (3)].expression)->type == TYPE_INTEGER) {
+            JUDGE_BOOL_EXPRESSION((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), (yyval.bool_expression), (yyvsp[(2) - (3)].relation_operator), atoi);
+        }
+        else if ((yyvsp[(1) - (3)].expression)->type == TYPE_REAL && (yyvsp[(3) - (3)].expression)->type == TYPE_REAL) {
+            JUDGE_BOOL_EXPRESSION((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), (yyval.bool_expression), (yyvsp[(2) - (3)].relation_operator), atof);
+        }
+        else {
+            printf("Warning, \'%s\' type mismatch \'%s\' type!", (yyvsp[(1) - (3)].expression)->value,
+                (yyvsp[(3) - (3)].expression)->value);
+            exit(0);
+        }
+
+        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression)->chain_true  = g_quaternion_index;
+        (yyval.bool_expression)->chain_false = g_quaternion_index + 1;
+        generateQuaternionNode((yyvsp[(1) - (3)].expression)->index_symbol, (yyvsp[(3) - (3)].expression)->index_symbol, 0,
+                               (yyvsp[(2) - (3)].relation_operator).type_opcode);
+        generateQuaternionNode(0, 0, 0, OPCODE_JMP);
+        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
+        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), (yyvsp[(2) - (3)].relation_operator).type_ast, (yyvsp[(2) - (3)].relation_operator).value);
+        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(1) - (3)].expression)->ast_node));
+        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(3) - (3)].expression)->ast_node));
+    }
+    break;
+
+  case 34:
+/* Line 1792 of yacc.c  */
+#line 355 "pascal_simple_compiler.y"
+    {
+
+    }
+    break;
+
+  case 35:
+/* Line 1792 of yacc.c  */
+#line 358 "pascal_simple_compiler.y"
+    {
+    }
+    break;
+
+  case 36:
+/* Line 1792 of yacc.c  */
+#line 360 "pascal_simple_compiler.y"
+    {
+        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression)->true_or_false = ((yyvsp[(2) - (2)].bool_expression)->true_or_false == TRUE) ? FALSE : TRUE;
+        (yyval.bool_expression)->chain_true = (yyvsp[(2) - (2)].bool_expression)->chain_false;
+        (yyval.bool_expression)->chain_false = (yyvsp[(2) - (2)].bool_expression)->chain_true;
+        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
+        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_NOT, "not");
+        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(2) - (2)].bool_expression)->ast_node));
+    }
+    break;
+
+  case 37:
+/* Line 1792 of yacc.c  */
+#line 370 "pascal_simple_compiler.y"
+    {
+        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression)->true_or_false = (yyvsp[(2) - (3)].bool_expression)->true_or_false;
+        (yyval.bool_expression)->chain_true = (yyvsp[(2) - (3)].bool_expression)->chain_true;
+        (yyval.bool_expression)->chain_false = (yyvsp[(2) - (3)].bool_expression)->chain_false;
+        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
+        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_LP_RP, "()");
+        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(2) - (3)].bool_expression)->ast_node));
+    }
+    break;
+
+  case 38:
+/* Line 1792 of yacc.c  */
+#line 381 "pascal_simple_compiler.y"
+    {
+        (yyval.symbol) = MALLOC_YACC_STRUCT(Symbol);
         (yyval.symbol)->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER, NULL, (yyvsp[(1) - (1)].string));
+        (yyval.symbol)->type  = TYPE_NULL;
+        (yyval.symbol)->value = NULL;
+        (yyval.symbol)->name  = (yyvsp[(1) - (1)].string);
         (yyval.symbol)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.symbol)->ast_node);
         setSyntaxTreeNode(*((yyval.symbol)->ast_node), NODE_NULL, (yyvsp[(1) - (1)].string));
     }
     break;
 
-  case 13:
+  case 39:
 /* Line 1792 of yacc.c  */
-#line 218 "pascal_simple_compiler.y"
+#line 392 "pascal_simple_compiler.y"
     {
-        (yyval.symbol) = (struct Symbol *)malloc(sizeof(struct Symbol));
+        (yyval.symbol) = MALLOC_YACC_STRUCT(Symbol);
         (yyval.symbol)->index_symbol = generateConstantNode(TYPE_INTEGER, (yyvsp[(1) - (1)].string));
-        (yyval.symbol)->ast_node =
-            (struct SyntaxTreeNode **)malloc(sizeof(struct SyntaxTreeNode));
+        (yyval.symbol)->type  = TYPE_INTEGER;
+        (yyval.symbol)->value = (yyvsp[(1) - (1)].string);
+        (yyval.symbol)->name  = NULL;
+        (yyval.symbol)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.symbol)->ast_node);
         setSyntaxTreeNode(*((yyval.symbol)->ast_node), NODE_INTEGER, (yyvsp[(1) - (1)].string));
     }
     break;
 
-  case 14:
+  case 40:
 /* Line 1792 of yacc.c  */
-#line 226 "pascal_simple_compiler.y"
+#line 402 "pascal_simple_compiler.y"
     {
-        (yyval.symbol) = (struct Symbol *)malloc(sizeof(struct Symbol));
+        (yyval.symbol) = MALLOC_YACC_STRUCT(Symbol);
         (yyval.symbol)->index_symbol = generateConstantNode(TYPE_REAL, (yyvsp[(1) - (1)].string));
-        (yyval.symbol)->ast_node =
-            (struct SyntaxTreeNode **)malloc(sizeof(struct SyntaxTreeNode));
+        (yyval.symbol)->type  = TYPE_REAL;
+        (yyval.symbol)->value = (yyvsp[(1) - (1)].string);
+        (yyval.symbol)->name  = NULL;
+        (yyval.symbol)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.symbol)->ast_node);
         setSyntaxTreeNode(*((yyval.symbol)->ast_node), NODE_REAL, (yyvsp[(1) - (1)].string));
     }
     break;
 
+  case 41:
+/* Line 1792 of yacc.c  */
+#line 413 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_LT;
+        (yyval.relation_operator).type_opcode = OPCODE_JLT;
+        (yyval.relation_operator).value       = "LT";
+    }
+    break;
+
+  case 42:
+/* Line 1792 of yacc.c  */
+#line 418 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_GT;
+        (yyval.relation_operator).type_opcode = OPCODE_JGT;
+        (yyval.relation_operator).value       = "GT";
+    }
+    break;
+
+  case 43:
+/* Line 1792 of yacc.c  */
+#line 423 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_LE;
+        (yyval.relation_operator).type_opcode = OPCODE_JLE;
+        (yyval.relation_operator).value       = "LE";
+    }
+    break;
+
+  case 44:
+/* Line 1792 of yacc.c  */
+#line 428 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_GE;
+        (yyval.relation_operator).type_opcode = OPCODE_JGE;
+        (yyval.relation_operator).value       = "GE";
+    }
+    break;
+
+  case 45:
+/* Line 1792 of yacc.c  */
+#line 433 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_EQ;
+        (yyval.relation_operator).type_opcode = OPCODE_JEQ;
+        (yyval.relation_operator).value       = "EQ";
+    }
+    break;
+
+  case 46:
+/* Line 1792 of yacc.c  */
+#line 438 "pascal_simple_compiler.y"
+    {
+        (yyval.relation_operator).type_ast    = NODE_NE;
+        (yyval.relation_operator).type_opcode = OPCODE_JNE;
+        (yyval.relation_operator).value       = "NE";
+    }
+    break;
+
 
 /* Line 1792 of yacc.c  */
-#line 1627 "pascal_simple_compiler_yacc.c"
+#line 2021 "pascal_simple_compiler_yacc.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1855,7 +2249,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 235 "pascal_simple_compiler.y"
+#line 444 "pascal_simple_compiler.y"
 
 
 void performArithmeticOperation(struct Expression *expr_parent_node,
@@ -1870,7 +2264,7 @@ void performArithmeticOperation(struct Expression *expr_parent_node,
     int    result_type;
     int    result_int;
     double result_real;
-    char   *result = NULL;
+    char   result[STRING_SIZE];
     char   *value_a, *value_b;
 
     type_a  = getSymbolNodeType(expr_l_son_node->index_symbol);
@@ -1889,13 +2283,13 @@ void performArithmeticOperation(struct Expression *expr_parent_node,
         result_type = TYPE_REAL;
     }
     else {
-        printf("Warning, \'%s\' type mismatch \'%s\'!", value_a, value_b);
+        printf("Warning, \'%s\' type mismatch \'%s\' type!", value_a, value_b);
         exit(0);
     }
 
     index_temp = generateVariableNode(result_type, VARIABLE_TEMP, result,
                                       "temp");
-    expr_parent_node = (struct Expression *)malloc(sizeof(struct Expression));
+    expr_parent_node = MALLOC_YACC_STRUCT(Expression);
     expr_parent_node->index_symbol = index_temp;
     expr_parent_node->index_quaternion = generateQuaternionNode(
         expr_l_son_node->index_symbol,

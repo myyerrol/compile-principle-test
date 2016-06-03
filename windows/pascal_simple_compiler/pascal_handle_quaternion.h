@@ -7,6 +7,13 @@
 #define OPCODE_DIV    503
 #define OPCODE_MINUS  504
 #define OPCODE_ASSIGN 505
+#define OPCODE_JLT    506
+#define OPCODE_JGT    507
+#define OPCODE_JLE    508
+#define OPCODE_JGE    509
+#define OPCODE_JEQ    510
+#define OPCODE_JNE    511
+#define OPCODE_JMP    512
 
 typedef struct QuaternionTable {
     int  argument_a;
@@ -23,9 +30,12 @@ typedef struct QuaternionTableNode {
 
 extern void createQuaternionNode(void);
 extern void printAllQuaternionNode(void);
+extern void backpatchQuaternionChain(int chain, int index);
 extern int generateQuaternionNode(int argument_a, int argument_b, int result,
                                   int opcode);
 extern int getQuaternionNodeIndex(int argument_a, int argument_b, int result,
                                   int opcode);
+extern int mergeQuaternionChain(int chain_a, int chain_b);
+extern QuaternionTableNode *getQuaternionNode(int index);
 
 #endif // PASCAL_HANDLE_QUATERNION_H

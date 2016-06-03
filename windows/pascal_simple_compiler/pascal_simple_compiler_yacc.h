@@ -49,37 +49,40 @@ extern int yydebug;
      IDENTIFIER = 258,
      NUMBER_INTEGER = 259,
      NUMBER_REAL = 260,
-     ERROR_STRING = 261,
-     SEMICOLON = 262,
-     COMMA = 263,
-     COLON = 264,
-     DOT = 265,
-     INTEGER = 266,
-     REAL = 267,
-     STATEMENT_BEGIN = 268,
-     STATEMENT_END = 269,
-     ASSIGN = 270,
-     IF = 271,
-     ELSE = 272,
-     THEN = 273,
-     WHILE = 274,
-     DO = 275,
-     ADD = 276,
-     SUB = 277,
-     MUL = 278,
-     DIV = 279,
-     LP = 280,
-     RP = 281,
-     AND = 282,
-     OR = 283,
-     NOT = 284,
-     LT = 285,
-     GT = 286,
-     LE = 287,
-     GE = 288,
-     EQ = 289,
-     NE = 290,
-     UMINUS = 291
+     TYPE_INTEGER = 261,
+     TYPE_REAL = 262,
+     PROGRAM = 263,
+     ERROR_STRING = 264,
+     SEMICOLON = 265,
+     COMMA = 266,
+     COLON = 267,
+     DOT = 268,
+     INTEGER = 269,
+     REAL = 270,
+     STATEMENT_BEGIN = 271,
+     STATEMENT_END = 272,
+     ASSIGN = 273,
+     IF = 274,
+     ELSE = 275,
+     THEN = 276,
+     WHILE = 277,
+     DO = 278,
+     ADD = 279,
+     SUB = 280,
+     MUL = 281,
+     DIV = 282,
+     LP = 283,
+     RP = 284,
+     AND = 285,
+     OR = 286,
+     NOT = 287,
+     LT = 288,
+     GT = 289,
+     LE = 290,
+     GE = 291,
+     EQ = 292,
+     NE = 293,
+     UMINUS = 294
    };
 #endif
 
@@ -88,26 +91,42 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 23 "pascal_simple_compiler.y"
+#line 82 "pascal_simple_compiler.y"
 
-    int  type;
     char *string;
     struct Statement {
         struct SyntaxTreeNode **ast_node;
     } *statement;
+    struct BoolExpression {
+        int                   true_or_false;
+        int                   chain_true;
+        int                   chain_false;
+        struct SyntaxTreeNode **ast_node;
+    } *bool_expression;
     struct Expression {
+        int                   type;
         int                   index_symbol;
         int                   index_quaternion;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *expression;
     struct Symbol {
+        int                   type;
         int                   index_symbol;
+        char                  *value;
+        char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *symbol;
+    struct RelationOperator {
+        int  type_ast;
+        int  type_opcode;
+        char *value;
+    } relation_operator;
 
 
 /* Line 2058 of yacc.c  */
-#line 111 "pascal_simple_compiler_yacc.h"
+#line 130 "pascal_simple_compiler_yacc.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

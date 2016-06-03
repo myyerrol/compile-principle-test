@@ -284,3 +284,41 @@ char *getSymbolNodeValue(int index)
         return getVariableNodeValue(index);
     }
 }
+
+ConstantTableNode *getConstantNode(int index)
+{
+    ConstantTableNode *constant_temp_node;
+    constant_temp_node = g_constant_head_node;
+
+    while ((constant_temp_node = constant_temp_node->next) != NULL) {
+        if (constant_temp_node->index == index) {
+            return constant_temp_node;
+        }
+    }
+
+    return NULL;
+}
+
+VariableTableNode *getVariableNode(int index)
+{
+    VariableTableNode *variable_temp_node;
+    variable_temp_node = g_variable_head_node;
+
+    while ((variable_temp_node = variable_temp_node->next) != NULL) {
+        if (variable_temp_node->index == index) {
+            return variable_temp_node;
+        }
+    }
+
+    return NULL;
+}
+
+void *getSymbolNode(int index)
+{
+    if (index > 0) {
+        return getConstantNode(index);
+    }
+    else {
+        return getVariableNode(index);
+    }
+}

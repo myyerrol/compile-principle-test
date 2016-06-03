@@ -53,5 +53,7 @@ extern int getSymbolNodeType(int index);
 extern char *getConstantNodeValue(int index);
 extern char *getVariableNodeValue(int index);
 extern char *getSymbolNodeValue(int index);
-
+extern ConstantTableNode *getConstantNode(int index);
+extern VariableTableNode *getVariableNode(int index);
+extern void *getSymbolNode(int index);
 #endif // PASCAL_HANDLE_SYMBOL_TABLE_H

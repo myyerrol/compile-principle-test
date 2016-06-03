@@ -2,7 +2,6 @@
 
 %{
     #include "pascal_simple_compiler_yacc.h"
-    #include "pascal_handle_symbol_table.h"
 %}
 
 LETTER [A-Za-z]
@@ -12,17 +11,18 @@ SPACE  [\t\n\040]
 
 %%
 [Bb][eE][Gg][iI][Nn]                  { ECHO; return STATEMENT_BEGIN; }
-[eE][Nn][Dd]                          { ECHO; return STATEMENT_END; }
+[Ee][Nn][Dd]                          { ECHO; return STATEMENT_END; }
+[Pp][Rr][Oo][Gg][Rr][Aa][Mm]          { ECHO; return PROGRAM; }
 [Aa][Nn][Dd]                          { ECHO; return AND; }
 [Oo][Rr]                              { ECHO; return OR; }
 [Nn][Oo][Tt]                          { ECHO; return NOT; }
-[iI][Ff]                              { ECHO; return IF; }
+[Ii][Ff]                              { ECHO; return IF; }
 [Ee][Ll][Ss][Ee]                      { ECHO; return ELSE; }
 [Tt][Hh][Ee][Nn]                      { ECHO; return THEN; }
 [Ww][Hh][Ii][Ll][Ee]                  { ECHO; return WHILE; }
-[Dd][oO]                              { ECHO; return DO; }
-[Ii][nN][Tt][eE][Gg][eE][Rr]          { ECHO; return INTEGER; }
-[Rr][eE][Aa][lL]                      { ECHO; return REAL; }
+[Dd][Oo]                              { ECHO; return DO; }
+[Ii][Nn][Tt][Ee][Gg][Ee][Rr]          { ECHO; return INTEGER; }
+[Rr][Ee][Aa][Ll]                      { ECHO; return REAL; }
 ":="                                  { ECHO; return ASSIGN; }
 "+"                                   { ECHO; return ADD; }
 "-"                                   { ECHO; return SUB; }
