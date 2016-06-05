@@ -21,6 +21,7 @@ SPACE  [\t\n\040]
 [Tt][Hh][Ee][Nn]                      { ECHO; return THEN; }
 [Ww][Hh][Ii][Ll][Ee]                  { ECHO; return WHILE; }
 [Dd][Oo]                              { ECHO; return DO; }
+[Vv][Aa][Rr]                          { ECHO; return VAR; }
 [Ii][Nn][Tt][Ee][Gg][Ee][Rr]          { ECHO; return INTEGER; }
 [Rr][Ee][Aa][Ll]                      { ECHO; return REAL; }
 ":="                                  { ECHO; return ASSIGN; }

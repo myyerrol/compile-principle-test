@@ -34,16 +34,33 @@
 #define NODE_LP_RP                     767
 #define NODE_LP                        768
 #define NODE_RP                        769
+#define NODE_AND                       770
+#define NODE_OR                        771
+#define NODE_IF                        772
+#define NODE_THEN                      773
+#define NODE_IF_THEN                   774
+#define NODE_STATEMENT                 775
+#define NODE_ELSE                      776
+#define NODE_IF_THEN_ELSE              777
+#define NODE_WHILE                     778
+#define NODE_DO                        779
+#define NODE_WHILE_DO                  780
+#define NODE_SEMICOLON                 781
+#define NODE_STATEMENT_SEMICOLON       782
+#define NODE_STATEMENT_LIST            783
+#define NODE_BEGIN                     784
+#define NODE_END                       785
+#define NODE_BEGIN_END                 786
 
 #define SPACE_POSITION                 6
 #define SPACE_HALF_LENGTH              4
 
-#define PRINT_SPACE(count)          \
-do {                                \
-    int i;                          \
-    for (i = 0; i < count; i++) {   \
-        printf(" ");                \
-    }                               \
+#define PRINT_SPACE(count)        \
+do {                              \
+    int i;                        \
+    for (i = 0; i < count; i++) { \
+        printf(" ");              \
+    }                             \
 } while (0)
 
 typedef struct SyntaxTreeNode {

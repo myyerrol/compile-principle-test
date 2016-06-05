@@ -80,16 +80,27 @@ int yyerror(char *string);
 %}
 
 %union {
+    int  type;
     char *string;
+
     struct Statement {
+        int                   chain;
         struct SyntaxTreeNode **ast_node;
     } *statement;
+
+    struct WhileStatement {
+        int                   chain;
+        int                   loop_start;
+        struct SyntaxTreeNode **ast_node;
+    } *while_statement;
+
     struct BoolExpression {
         int                   true_or_false;
         int                   chain_true;
         int                   chain_false;
         struct SyntaxTreeNode **ast_node;
     } *bool_expression;
+
     struct Expression {
         int                   type;
         int                   index_symbol;
@@ -98,6 +109,7 @@ int yyerror(char *string);
         char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *expression;
+
     struct Symbol {
         int                   type;
         int                   index_symbol;
@@ -105,24 +117,45 @@ int yyerror(char *string);
         char                  *name;
         struct SyntaxTreeNode **ast_node;
     } *symbol;
+
+    struct VariableList {
+        int                   chain;
+        struct SyntaxTreeNode **ast_node;
+    } *varialbe_list;
+
+    struct Variable {
+        int                   type;
+        int                   chain;
+        int                   index_symbol;
+        char                  *value;
+        char                  *name;
+        struct SyntaxTreeNode **ast_node;
+    } *varialbe;
+
+    struct Constant {
+        int                   type;
+        int                   index_symbol;
+        char                  *value;
+        struct SyntaxTreeNode **ast_node;
+    } *constant;
+
     struct RelationOperator {
-        int  type_ast;
-        int  type_opcode;
-        char *value;
+        int                   type_ast;
+        int                   type_opcode;
+        char                  *value;
     } relation_operator;
 }
 
 %token <string> IDENTIFIER
 %token <string> NUMBER_INTEGER
 %token <string> NUMBER_REAL
-%token          TYPE_INTEGER
-%token          TYPE_REAL
 %token          PROGRAM
 %token          ERROR_STRING
 %token          SEMICOLON
 %token          COMMA
 %token          COLON
 %token          DOT
+%token          VAR
 %token          INTEGER
 %token          REAL
 %token          STATEMENT_BEGIN
@@ -160,40 +193,44 @@ int yyerror(char *string);
 %type <string>            ProgramDefinition
 %type <string>            SubProgram
 %type <string>            VariableDefinition
-%type <string>            CompleteStatement
+%type <statement>         CompoundStatement
 %type <string>            VariableDefinitionList
 %type <string>            VariableDefinitionStatement
-%type <string>            VariableList
-%type <string>            Type
-%type <string>            StatementList
-%type <string>            Statement
+%type <varialbe_list>     VariableList
+%type <type>              Type
+%type <statement>         StatementList
+%type <statement>         StatementSemicoln
+%type <statement>         Statement
 %type <statement>         AssignmentStatement
-%type <string>            IfStatementElse
-%type <string>            IfBoolExpressionThen
-%type <string>            WhileBoolExpressionDo
+%type <statement>         IfStatementElse
+%type <statement>         IfBoolExpressionThen
+%type <while_statement>   WhileBoolExpressionDo
+%type <while_statement>   While
+%type <bool_expression>   BoolExpressionAnd
+%type <bool_expression>   BoolExpressionOR
 %type <bool_expression>   BoolExpression;
 %type <expression>        Expression
-%type <symbol>            Variable
-%type <symbol>            Constant
+%type <varialbe>          Variable
+%type <constant>          Constant
 %type <relation_operator> RelationOperator
 
 %start ProgramDefinition
 
 %%
 ProgramDefinition
-    : PROGRAM IDENTIFIER SEMICOLON SubProgram {
+    : PROGRAM IDENTIFIER SEMICOLON SubProgram DOT {
 
     }
 SubProgram
-    : VariableDefinition CompleteStatement {
+    : VariableDefinition CompoundStatement {
 
     }
 VariableDefinition
-    : Variable VariableDefinitionList SEMICOLON {
+    : VAR VariableDefinitionList SEMICOLON {
 
     }
 VariableDefinitionList
-    : VariableDefinitionStatement SEMICOLON VariableDefinitionList {
+    : VariableDefinitionList SEMICOLON VariableDefinitionStatement {
 
     }
     | VariableDefinitionStatement {
@@ -204,50 +241,127 @@ VariableDefinitionStatement
 
     }
 Type
-    : TYPE_INTEGER {
-
+    : INTEGER {
+        $$ = TYPE_INTEGER;
     }
-    | TYPE_REAL {
-
+    | REAL {
+        $$ = TYPE_REAL;
     }
 VariableList
-    : Variable COMMA VariableList {
+    : VariableList COMMA Variable {
+        $$ = MALLOC_YACC_STRUCT(VariableList);
+        modifyVariableNodeChain($1->chain, $3->chain);
 
     }
     | Variable {
-
+        $$ = MALLOC_YACC_STRUCT(VariableList);
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        $$->ast_node = $1->ast_node;
     }
 StatementList
-    : Statement SEMICOLON StatementList {
-
+    : StatementSemicoln Statement {
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $2->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
+                          "statement_list");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     | Statement {
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
+                          "statement_list");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+    }
+StatementSemicoln
+    : StatementList SEMICOLON {
+        struct SyntaxTreeNode **ast_semicolon_node;
+        ast_semicolon_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_semicolon_node);
+        setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
 
+        backpatchQuaternionNodeChain($1->chain, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_SEMICOLON,
+                          "statement;");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
     }
 Statement
     : AssignmentStatement {
-
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = 0;
+        $$->ast_node = $1->ast_node;
     }
     | IfStatementElse Statement {
-
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = mergeQuaternionNodeChain($1->chain, $2->chain);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     | IfBoolExpressionThen Statement {
-
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = mergeQuaternionNodeChain($1->chain, $2->chain);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     | WhileBoolExpressionDo Statement {
-
+        backpatchQuaternionNodeChain($2->chain, $1->loop_start);
+        generateQuaternionNode(0, 0, $1->loop_start, OPCODE_JMP);
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
-    | CompleteStatement {
-
+    | CompoundStatement {
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
     }
-    |
-CompleteStatement
-    : STATEMENT_BEGIN StatementList STATEMENT_END DOT {
+    | {
+        printf("");
+    }
+CompoundStatement
+    : STATEMENT_BEGIN StatementList STATEMENT_END {
+        struct SyntaxTreeNode **ast_begin_node, **ast_end_node;
+        ast_begin_node = createSyntaxTreeNodePointer();
+        ast_end_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_begin_node);
+        createSyntaxTreeNode(ast_end_node);
+        setSyntaxTreeNode(*ast_begin_node, NODE_BEGIN, "begin");
+        setSyntaxTreeNode(*ast_end_node, NODE_THEN, "end");
 
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $2->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_BEGIN_END, "begin_end");
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_begin_node);
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_end_node);
     }
 AssignmentStatement
     : Variable ASSIGN Expression {
-        ModifyVariableNode($1->index_symbol, $3->type, $3->value);
+        modifyVariableNode($1->index_symbol, $3->type, $3->value);
         generateQuaternionNode($3->index_symbol, 0, $1->index_symbol,
                                OPCODE_ASSIGN);
         $$ = MALLOC_YACC_STRUCT(Statement);
@@ -259,15 +373,68 @@ AssignmentStatement
     }
 IfStatementElse
     : IfBoolExpressionThen Statement ELSE {
+        int temp = g_quaternion_index;
+        struct SyntaxTreeNode **ast_else_node;
+        ast_else_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_else_node);
+        setSyntaxTreeNode(*(ast_else_node), NODE_ELSE, "else");
 
+        generateQuaternionNode(0, 0, 0, OPCODE_JMP);
+        backpatchQuaternionNodeChain($1->chain, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = mergeQuaternionNodeChain($2->chain, temp);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN_ELSE, "if_then_else");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_else_node);
     }
 IfBoolExpressionThen
     : IF BoolExpression THEN {
+        struct SyntaxTreeNode **ast_if_node, **ast_then_node;
+        ast_if_node = createSyntaxTreeNodePointer();
+        ast_then_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_if_node);
+        createSyntaxTreeNode(ast_then_node);
+        setSyntaxTreeNode(*ast_if_node, NODE_IF, "if");
+        setSyntaxTreeNode(*ast_then_node, NODE_THEN, "then");
 
+        backpatchQuaternionNodeChain($2->chain_true, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(Statement);
+        $$->chain = $2->chain_false;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN, "if_then");
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_if_node);
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_then_node);
     }
 WhileBoolExpressionDo
-    : WHILE BoolExpression DO {
+    : While BoolExpression DO {
+        struct SyntaxTreeNode **ast_do_node;
+        ast_do_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_do_node);
+        setSyntaxTreeNode(*ast_do_node, NODE_DO, "do");
 
+        backpatchQuaternionNodeChain($2->chain_true, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(WhileStatement);
+        $$->chain = $2->chain_false;
+        $$->loop_start = $1->loop_start;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_WHILE_DO, "while_do");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_do_node);
+    }
+While
+    : WHILE {
+        $$ = MALLOC_YACC_STRUCT(WhileStatement);
+        $$->chain = 0;
+        $$->loop_start = g_quaternion_index;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_WHILE, "while");
     }
 Expression
     : Expression ADD Expression {
@@ -322,7 +489,7 @@ Expression
         $$->index_symbol = $1->index_symbol;
         $$->type  = $1->type;
         $$->value = $1->value;
-        $$->name  = $1->name;
+        $$->name  = NULL;
         $$->index_quaternion = 0;
         $$->ast_node = $1->ast_node;
     }
@@ -352,10 +519,23 @@ BoolExpression
         addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
         addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
     }
-    | BoolExpression AND {
-
+    | BoolExpressionAnd BoolExpression{
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->chain_true = $2->chain_true;
+        $$->chain_false = mergeQuaternionNodeChain($1->chain_false,
+                                               $2->chain_false);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
     }
-    | BoolExpression OR {
+    | BoolExpressionOR BoolExpression{
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->chain_false = $2->chain_false;
+        $$->chain_true = mergeQuaternionNodeChain($1->chain_true,
+                                              $2->chain_true);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
     }
     | NOT BoolExpression {
         $$ = MALLOC_YACC_STRUCT(BoolExpression);
@@ -377,10 +557,35 @@ BoolExpression
         setSyntaxTreeNode(*($$->ast_node), NODE_LP_RP, "()");
         addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
+BoolExpressionAnd
+    : BoolExpression AND {
+        backpatchQuaternionNodeChain($1->chain_true, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->true_or_false = $1->true_or_false;
+        $$->chain_false = $1->chain_false;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_AND, "and");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+    }
+BoolExpressionOR
+    : BoolExpression OR {
+        backpatchQuaternionNodeChain($1->chain_true, g_quaternion_index);
+        $$ = MALLOC_YACC_STRUCT(BoolExpression);
+        $$->true_or_false = $1->true_or_false;
+        $$->chain_true = $1->chain_true;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_OR, "or");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+
+    }
 Variable
     : IDENTIFIER {
-        $$ = MALLOC_YACC_STRUCT(Symbol);
-        $$->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER, NULL, $1);
+        $$ = MALLOC_YACC_STRUCT(Variable);
+        $$->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER, NULL,
+                                                $1);
+        $$->chain = $$->index_symbol;
         $$->type  = TYPE_NULL;
         $$->value = NULL;
         $$->name  = $1;
@@ -390,21 +595,19 @@ Variable
     }
 Constant
     : NUMBER_INTEGER {
-        $$ = MALLOC_YACC_STRUCT(Symbol);
+        $$ = MALLOC_YACC_STRUCT(Constant);
         $$->index_symbol = generateConstantNode(TYPE_INTEGER, $1);
         $$->type  = TYPE_INTEGER;
         $$->value = $1;
-        $$->name  = NULL;
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_INTEGER, $1);
     }
     | NUMBER_REAL {
-        $$ = MALLOC_YACC_STRUCT(Symbol);
+        $$ = MALLOC_YACC_STRUCT(Constant);
         $$->index_symbol = generateConstantNode(TYPE_REAL, $1);
         $$->type  = TYPE_REAL;
         $$->value = $1;
-        $$->name  = NULL;
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_REAL, $1);

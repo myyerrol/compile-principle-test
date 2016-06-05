@@ -33,6 +33,7 @@ typedef struct VariableTable {
 
 typedef struct VariableTableNode {
     int                      index;
+    int                      chain;
     VariableTable            *variable;
     struct VariableTableNode *next;
 } VariableTableNode;
@@ -41,10 +42,12 @@ extern void createConstantNode(void);
 extern void createVariableNode(void);
 extern void printAllConstantNode(void);
 extern void printAllVariableNode(void);
-extern void ModifyConstantNodeValue(int index, char *value);
-extern void ModifyVariableNodeValue(int index, char *value);
-extern void ModifySymbolNodeValue(int index, char *value);
-extern void ModifyVariableNode(int index, int type, char *value);
+extern void modifyConstantNodeValue(int index, char *value);
+extern void modifyVariableNodeValue(int index, char *value);
+extern void modifySymbolNodeValue(int index, char *value);
+extern void modifyVariableNode(int index, int type, char *value);
+extern void modifyVariableNodeChain(int index, int chain);
+extern void backpatchVariableNodeChain(int index, int type);
 extern int generateConstantNode(int type, char *value);
 extern int generateVariableNode(int type, int flag, char *value, char *name);
 extern int getConstantNodeType(int index);

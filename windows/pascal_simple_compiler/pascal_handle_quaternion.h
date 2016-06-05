@@ -30,12 +30,12 @@ typedef struct QuaternionTableNode {
 
 extern void createQuaternionNode(void);
 extern void printAllQuaternionNode(void);
-extern void backpatchQuaternionChain(int chain, int index);
+extern void backpatchQuaternionNodeChain(int chain, int index);
 extern int generateQuaternionNode(int argument_a, int argument_b, int result,
                                   int opcode);
 extern int getQuaternionNodeIndex(int argument_a, int argument_b, int result,
                                   int opcode);
-extern int mergeQuaternionChain(int chain_a, int chain_b);
+extern int mergeQuaternionNodeChain(int chain_a, int chain_b);
 extern QuaternionTableNode *getQuaternionNode(int index);
 
 #endif // PASCAL_HANDLE_QUATERNION_H

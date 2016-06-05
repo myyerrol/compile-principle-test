@@ -311,7 +311,7 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 60 "pascal_simple_compiler.l"
+#line 61 "pascal_simple_compiler.l"
 
 
 #line 318 "pascal_simple_compiler_lex.h"

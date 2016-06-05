@@ -37,6 +37,7 @@ void createVariableNode()
     g_variable_head_node->variable->value = NULL;
     g_variable_head_node->variable->name  = NULL;
     g_variable_head_node->index           = 0;
+    g_variable_head_node->chain           = 0;
     g_variable_head_node->next            = NULL;
 }
 
@@ -112,7 +113,7 @@ void printAllVariableNode()
     }
 }
 
-void ModifyConstantNodeValue(int index, char *value)
+void modifyConstantNodeValue(int index, char *value)
 {
     ConstantTableNode *constant_temp_node;
     constant_temp_node = g_constant_head_node;
@@ -124,7 +125,7 @@ void ModifyConstantNodeValue(int index, char *value)
     }
 }
 
-void ModifyVariableNodeValue(int index, char *value)
+void modifyVariableNodeValue(int index, char *value)
 {
     VariableTableNode *variable_temp_node;
     variable_temp_node = g_variable_head_node;
@@ -136,17 +137,17 @@ void ModifyVariableNodeValue(int index, char *value)
     }
 }
 
-void ModifySymbolNodeValue(int index, char *value)
+void modifySymbolNodeValue(int index, char *value)
 {
     if (index > 0) {
-        ModifyConstantNodeValue(index, value);
+        modifyConstantNodeValue(index, value);
     }
     else {
-        ModifyVariableNodeValue(index, value);
+        modifyVariableNodeValue(index, value);
     }
 }
 
-void ModifyVariableNode(int index, int type, char *value)
+void modifyVariableNode(int index, int type, char *value)
 {
     VariableTableNode *variable_temp_node;
     variable_temp_node = g_variable_head_node;
@@ -156,6 +157,25 @@ void ModifyVariableNode(int index, int type, char *value)
             variable_temp_node->variable->type = type;
             variable_temp_node->variable->value = value;
         }
+    }
+}
+
+void modifyVariableNodeChain(int index, int chain)
+{
+    VariableTableNode *variable_temp_node;
+
+    variable_temp_node = getVariableNode(index);
+    variable_temp_node->chain = chain;
+}
+
+void backpatchVariableNodeChain(int index, int type)
+{
+    VariableTableNode *variable_temp_node;
+    variable_temp_node = getVariableNode(index);
+
+    while (variable_temp_node->chain != variable_temp_node->index) {
+        variable_temp_node->variable->type = type;
+        variable_temp_node = getVariableNode(variable_temp_node->chain);
     }
 }
 
@@ -200,6 +220,7 @@ int generateVariableNode(int type, int flag, char *value, char *name)
     variable_new_node->variable->value = value;
     variable_new_node->variable->name  = name;
     variable_new_node->index           = g_variable_index;
+    variable_new_node->chain           = g_variable_index;
     g_variable_tail_node->next         = variable_new_node;
     g_variable_tail_node               = variable_new_node;
     g_variable_tail_node->next         = NULL;

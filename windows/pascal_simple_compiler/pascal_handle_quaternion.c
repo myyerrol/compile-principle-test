@@ -77,7 +77,7 @@ void printAllQuaternionNode()
     }
 }
 
-void backpatchQuaternionChain(int chain, int index)
+void backpatchQuaternionNodeChain(int chain, int index)
 {
     int temp_a = chain;
     int temp_b;
@@ -134,7 +134,7 @@ int getQuaternionNodeIndex(int argument_a, int argument_b, int result,
     return 0;
 }
 
-int mergeQuaternionChain(int chain_a, int chain_b)
+int mergeQuaternionNodeChain(int chain_a, int chain_b)
 {
     int temp;
 
