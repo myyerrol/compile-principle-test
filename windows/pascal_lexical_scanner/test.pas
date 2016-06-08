@@ -1,7 +1,9 @@
 program test;
 
+var a, b, c: integer;
+
 begin
-    var a, b, c: integer;
+
     a := 10;
     b := 20.0;
 
