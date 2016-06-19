@@ -51,6 +51,14 @@
 #define NODE_BEGIN                     784
 #define NODE_END                       785
 #define NODE_BEGIN_END                 786
+#define NODE_COMMA                     787
+#define NODE_COLON                     788
+#define NODE_TYPE                      789
+#define NODE_VAR                       790
+#define NODE_VAR_SEMICOLON             791
+#define NODE_REDUCE                    792
+#define NODE_IDENTIFIER                793
+#define NODE_DOT                       794
 
 #define SPACE_POSITION                 6
 #define SPACE_HALF_LENGTH              4
@@ -72,6 +80,7 @@ typedef struct SyntaxTreeNode {
 } AbstractSyntaxTreeNode, SpecificSyntaxTreeNode;
 
 extern void printAllAbstractSyntaxTreeNode(AbstractSyntaxTreeNode *ast_node);
+extern void deleteAbstractSyntaxTreeNode(AbstractSyntaxTreeNode *ast_node);
 extern int createSyntaxTreeNode(struct SyntaxTreeNode **st_node);
 extern int initSyntaxTreeNode(struct SyntaxTreeNode *st_node);
 extern int setSyntaxTreeNode(struct SyntaxTreeNode *st_node, int type,
@@ -85,4 +94,5 @@ extern int getSyntaxTreeSonNode(struct SyntaxTreeNode *st_parent_node,
 extern int getSyntaxTreeBrotherNode(struct SyntaxTreeNode *st_current_node,
                                     struct SyntaxTreeNode **st_brother_node);
 extern struct SyntaxTreeNode **createSyntaxTreeNodePointer();
+
 #endif // PASCAL_HANDLE_SYNTAX_TREE_H

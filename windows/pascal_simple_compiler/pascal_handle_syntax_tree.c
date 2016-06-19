@@ -9,11 +9,9 @@ void printAllAbstractSyntaxTreeNode(AbstractSyntaxTreeNode *ast_node)
     AbstractSyntaxTreeNode *ast_temp_node;
     ast_temp_node = ast_node;
 
-    printf("============================================================\n");
-    printf("                    Abstract Syntax Tree                    \n");
-    printf("============================================================\n");
-    printf("");
-
+    printf("==============================================================\n");
+    printf("                     Abstract Syntax Tree                     \n");
+    printf("==============================================================\n");
 
     PRINT_SPACE(count);
     printf("%s\n", ast_temp_node->value);
@@ -25,9 +23,26 @@ void printAllAbstractSyntaxTreeNode(AbstractSyntaxTreeNode *ast_node)
         printf("%s", ast_temp_node->value);
         ast_temp_node = ast_temp_node->brother;
         PRINT_SPACE(2 * SPACE_HALF_LENGTH);
-        printf("%s\n",ast_temp_node->value);
+        printf("%s\n", ast_temp_node->value);
         count += (2 * SPACE_HALF_LENGTH);
     }
+}
+
+void deleteAbstractSyntaxTreeNode(AbstractSyntaxTreeNode *ast_node)
+{
+    AbstractSyntaxTreeNode *ast_temp_node_a, *ast_temp_node_b;
+    ast_temp_node_a = ast_node;
+
+    while (ast_temp_node_a->son != NULL) {
+        ast_temp_node_b = ast_temp_node_a->son;
+        free(ast_temp_node_a);
+        ast_temp_node_a = ast_temp_node_b;
+        ast_temp_node_b = ast_temp_node_a->brother;
+        free(ast_temp_node_a);
+        ast_temp_node_a = ast_temp_node_b;
+    }
+
+    free(ast_temp_node_a);
 }
 
 int createSyntaxTreeNode(struct SyntaxTreeNode **st_node)
@@ -149,4 +164,3 @@ struct SyntaxTreeNode **createSyntaxTreeNodePointer()
     st_node = (struct SyntaxTreeNode **)malloc(sizeof(struct SyntaxTreeNode));
     return st_node;
 }
-

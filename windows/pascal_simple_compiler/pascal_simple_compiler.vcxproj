@@ -56,8 +56,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>win_flex --header-file=pascal_simple_compiler_lex.h -o pascal_simple_compiler_lex.c --wincompat pascal_simple_compiler.l
-win_bison --defines=pascal_simple_compiler_yacc.h -o pascal_simple_compiler_yacc.c  pascal_simple_compiler.y</Command>
+      <Command>win_flex -v --header-file=pascal_simple_compiler_lex.h -o pascal_simple_compiler_lex.c --wincompat pascal_simple_compiler.l
+win_bison -v --defines=pascal_simple_compiler_yacc.h -o pascal_simple_compiler_yacc.c  pascal_simple_compiler.y</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,14 +78,18 @@ win_bison --defines=pascal_simple_compiler_yacc.h -o pascal_simple_compiler_yacc
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="pascal_debug_program.h" />
     <ClInclude Include="pascal_handle_quaternion.h" />
     <ClInclude Include="pascal_handle_syntax_tree.h" />
     <ClInclude Include="pascal_handle_symbol_table.h" />
+    <ClInclude Include="pascal_handle_semantics.h" />
     <ClInclude Include="pascal_simple_compiler_lex.h" />
     <ClInclude Include="pascal_simple_compiler_yacc.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="pascal_debug_program.c" />
     <ClCompile Include="pascal_handle_quaternion.c" />
+    <ClCompile Include="pascal_handle_semantics.c" />
     <ClCompile Include="pascal_handle_symbol_table.c" />
     <ClCompile Include="pascal_simple_compiler.c" />
     <ClCompile Include="pascal_handle_syntax_tree.c" />

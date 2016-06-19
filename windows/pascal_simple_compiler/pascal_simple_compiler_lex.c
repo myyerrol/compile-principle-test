@@ -410,7 +410,7 @@ static yyconst flex_int32_t yy_ec[256] =
        16,   17,    1,    1,   18,   19,   20,   21,   22,   23,
        24,   25,   26,   20,   20,   27,   28,   29,   30,   31,
        20,   32,   33,   34,   20,   35,   36,   20,   20,   20,
-        1,    1,    1,    1,    1,    1,   18,   19,   20,   21,
+        1,    1,    1,    1,   20,    1,   18,   19,   20,   21,
 
        22,   23,   24,   25,   26,   20,   20,   27,   28,   29,
        30,   31,   20,   32,   33,   34,   20,   35,   36,   20,
@@ -525,7 +525,7 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "pascal_simple_compiler.l"
 #line 4 "pascal_simple_compiler.l"
-    #include "pascal_simple_compiler_yacc.h"
+#include "pascal_simple_compiler_yacc.h"
 #line 530 "pascal_simple_compiler_lex.c"
 
 #define INITIAL 0

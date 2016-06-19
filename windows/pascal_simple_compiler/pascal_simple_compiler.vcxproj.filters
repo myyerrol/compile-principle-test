@@ -42,6 +42,12 @@
     <ClCompile Include="pascal_simple_compiler_lex.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="pascal_debug_program.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pascal_handle_semantics.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pascal_handle_symbol_table.h">
@@ -57,6 +63,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pascal_simple_compiler_lex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_debug_program.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pascal_handle_semantics.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

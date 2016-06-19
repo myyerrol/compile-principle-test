@@ -70,82 +70,21 @@
 #include <string.h>
 #include "pascal_simple_compiler_lex.h"
 #include "pascal_simple_compiler_yacc.h"
-#include "pascal_handle_quaternion.h"
+#include "pascal_handle_semantics.h"
 #include "pascal_handle_symbol_table.h"
+#include "pascal_handle_quaternion.h"
 #include "pascal_handle_syntax_tree.h"
+#include "pascal_debug_program.h"
 
-#define STRING_SIZE            20
-#define STRING_WITH_MINUS_SIZE 25
-#define TRUE                   1
-#define FALSE                  0
-
-#define MALLOC_YACC_STRUCT(type)                                         \
-(struct type *)malloc(sizeof(struct type))                               \
-
-#define JUDGE_BOOL_EXPRESSION(expr_l, expr_r, expr_bool, operator, type) \
-do {                                                                     \
-    if (operator.type_opcode == OPCODE_JLT) {                            \
-        if (type(expr_l->value) < type(expr_r->value)) {                 \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator.type_opcode == OPCODE_JGT) {                       \
-        if (type(expr_l->value) > type(expr_r->value)) {                 \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator.type_opcode == OPCODE_JLE) {                       \
-        if (type(expr_l->value) <= type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator.type_opcode == OPCODE_JGE) {                       \
-        if (type(expr_l->value) >= type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator.type_opcode == OPCODE_JEQ) {                       \
-        if (type(expr_l->value) == type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator.type_opcode == OPCODE_JNE) {                       \
-        if (type(expr_l->value) != type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-} while (0)
+#define YYERROR_VERBOSE
 
 extern int g_quaternion_index;
+extern int g_temp_count;
 
-void performArithmeticOperation(struct Expression *expr_parent_node,
-                                struct Expression *expr_l_son_node,
-                                struct Expression *expr_r_son_node,
-                                int type_quaternion,
-                                int type_syntaxtree,
-                                char *opcode);
-int yyerror(char *string);
+int yyerror(const char *string);
 
 /* Line 371 of yacc.c  */
-#line 149 "pascal_simple_compiler_yacc.c"
+#line 88 "pascal_simple_compiler_yacc.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -225,76 +164,22 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 82 "pascal_simple_compiler.y"
+#line 21 "pascal_simple_compiler.y"
 
-    int  type;
-    char *string;
-
-    struct Statement {
-        int                   chain;
-        struct SyntaxTreeNode **ast_node;
-    } *statement;
-
-    struct WhileStatement {
-        int                   chain;
-        int                   loop_start;
-        struct SyntaxTreeNode **ast_node;
-    } *while_statement;
-
-    struct BoolExpression {
-        int                   true_or_false;
-        int                   chain_true;
-        int                   chain_false;
-        struct SyntaxTreeNode **ast_node;
-    } *bool_expression;
-
-    struct Expression {
-        int                   type;
-        int                   index_symbol;
-        int                   index_quaternion;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *expression;
-
-    struct Symbol {
-        int                   type;
-        int                   index_symbol;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *symbol;
-
-    struct VariableList {
-        int                   chain;
-        struct SyntaxTreeNode **ast_node;
-    } *varialbe_list;
-
-    struct Variable {
-        int                   type;
-        int                   chain;
-        int                   index_symbol;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *varialbe;
-
-    struct Constant {
-        int                   type;
-        int                   index_symbol;
-        char                  *value;
-        struct SyntaxTreeNode **ast_node;
-    } *constant;
-
-    struct RelationOperator {
-        int                   type_ast;
-        int                   type_opcode;
-        char                  *value;
-    } relation_operator;
+    int                     type;
+    char                    *string;
+    struct Statement        *statement;
+    struct WhileStatement   *while_statement;
+    struct BoolExpression   *bool_expression;
+    struct Expression       *expression;
+    struct VariableList     *variable_list;
+    struct Variable         *variable;
+    struct Constant         *constant;
+    struct RelationOperator *relation_operator;
 
 
 /* Line 387 of yacc.c  */
-#line 298 "pascal_simple_compiler_yacc.c"
+#line 183 "pascal_simple_compiler_yacc.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -322,7 +207,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 326 "pascal_simple_compiler_yacc.c"
+#line 211 "pascal_simple_compiler_yacc.c"
 
 #ifdef short
 # undef short
@@ -631,12 +516,12 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   221,   221,   225,   229,   233,   236,   240,   244,   247,
-     251,   257,   263,   273,   283,   299,   304,   313,   322,   333,
-     341,   345,   363,   375,   394,   414,   431,   440,   443,   446,
-     449,   452,   455,   478,   487,   497,   522,   531,   540,   550,
-     561,   572,   584,   597,   606,   616,   621,   626,   631,   636,
-     641
+       0,   106,   106,   139,   149,   168,   177,   184,   210,   213,
+     217,   241,   250,   260,   271,   289,   294,   304,   314,   326,
+     334,   338,   356,   379,   399,   420,   438,   448,   453,   458,
+     463,   468,   471,   502,   520,   530,   557,   567,   577,   588,
+     600,   612,   624,   665,   677,   690,   696,   702,   708,   714,
+     720
 };
 #endif
 
@@ -1597,55 +1482,136 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 221 "pascal_simple_compiler.y"
+#line 106 "pascal_simple_compiler.y"
     {
+        // struct SyntaxTreeNode **ast_program_node, **ast_identifier_node;
+        // struct SyntaxTreeNode **ast_semicolon_node, **ast_dot_node;
+        // ast_program_node = createSyntaxTreeNodePointer();
+        // ast_identifier_node = createSyntaxTreeNodePointer();
+        // ast_semicolon_node = createSyntaxTreeNodePointer();
+        // ast_dot_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_program_node);
+        // createSyntaxTreeNode(ast_identifier_node);
+        // createSyntaxTreeNode(ast_semicolon_node);
+        // createSyntaxTreeNode(ast_dot_node);
+        // setSyntaxTreeNode(*ast_program_node, NODE_PROGRAM, "program");
+        // setSyntaxTreeNode(*ast_identifier_node, NODE_IDENTIFIER, $2);
+        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
+        // setSyntaxTreeNode(*ast_dot_node, NODE_DOT, ".");
 
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_REDUCE, "/\\");
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_program_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_identifier_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *($4->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_dot_node);
+
+        printInformation();
+        printf("Pascal program is identified successfully!!!\n");
+        deleteConstantNode();
+        deleteVariableNode();
     }
     break;
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 225 "pascal_simple_compiler.y"
+#line 139 "pascal_simple_compiler.y"
     {
-
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_REDUCE, "/\\");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     break;
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 229 "pascal_simple_compiler.y"
+#line 149 "pascal_simple_compiler.y"
     {
+        // struct SyntaxTreeNode **ast_var_node, **ast_semicolon_node;
+        // ast_var_node = createSyntaxTreeNodePointer();
+        // ast_semicolon_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_var_node);
+        // createSyntaxTreeNode(ast_semicolon_node);
+        // setSyntaxTreeNode(*ast_var_node, NODE_VAR, "var");
+        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
 
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_VAR_SEMICOLON, "var;");
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_var_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
     }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 233 "pascal_simple_compiler.y"
+#line 168 "pascal_simple_compiler.y"
     {
-
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_SEMICOLON, ";");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
     }
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 236 "pascal_simple_compiler.y"
+#line 177 "pascal_simple_compiler.y"
     {
-
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // $$->ast_node = $1->ast_node;
     }
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 240 "pascal_simple_compiler.y"
+#line 184 "pascal_simple_compiler.y"
     {
+        char *type;
+        // struct SyntaxTreeNode **ast_type_node;
+        // ast_type_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_type_node);
 
+        if ((yyvsp[(3) - (3)].type) == TYPE_INTEGER) {
+            type = "integer";
+        }
+        else if ((yyvsp[(3) - (3)].type) ==  TYPE_REAL) {
+            type = "real";
+        }
+
+        // setSyntaxTreeNode(*ast_type_node, NODE_TYPE, type);
+
+        backpatchVariableNodeChain((yyvsp[(1) - (3)].variable_list)->chain, (yyvsp[(3) - (3)].type));
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        (yyval.statement)->chain = 0;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_COLON, ":");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_type_node);
+        printDebugVariableInformation();
     }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 244 "pascal_simple_compiler.y"
+#line 210 "pascal_simple_compiler.y"
     {
         (yyval.type) = TYPE_INTEGER;
     }
@@ -1653,7 +1619,7 @@ yyreduce:
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 247 "pascal_simple_compiler.y"
+#line 213 "pascal_simple_compiler.y"
     {
         (yyval.type) = TYPE_REAL;
     }
@@ -1661,79 +1627,103 @@ yyreduce:
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 251 "pascal_simple_compiler.y"
+#line 217 "pascal_simple_compiler.y"
     {
-        (yyval.varialbe_list) = MALLOC_YACC_STRUCT(VariableList);
-        (yyval.varialbe_list)->chain = (yyvsp[(1) - (3)].varialbe_list)->chain;
-        modifyVariableNodeChain((yyvsp[(1) - (3)].varialbe_list)->chain, (yyvsp[(3) - (3)].varialbe)->chain);
+        if (getVariableNodeDefine((yyvsp[(3) - (3)].variable)->index_symbol) == TRUE) {
+            if (judgeVariableNodeExist((yyvsp[(3) - (3)].variable)->name)) {
+                printf("\nError, variable is defined rpeatedly!\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (getVariableNodeDefine((yyvsp[(3) - (3)].variable)->index_symbol) == ERROR) {
+            printf("\nError, there is not the variable!\n");
+            exit(EXIT_FAILURE);
+        }
 
+        modifyVariableNodeDefine((yyvsp[(3) - (3)].variable)->index_symbol);
+
+        (yyval.variable_list) = ALLOCATE_STRUCT_MEMORY(VariableList);
+        modifyVariableNodeChain((yyvsp[(1) - (3)].variable_list)->chain, (yyvsp[(3) - (3)].variable)->chain);
+        (yyval.variable_list)->chain = (yyvsp[(1) - (3)].variable_list)->chain;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_COMMA, ",");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        printDebugVariableInformation();
     }
     break;
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 257 "pascal_simple_compiler.y"
+#line 241 "pascal_simple_compiler.y"
     {
-        (yyval.varialbe_list) = MALLOC_YACC_STRUCT(VariableList);
-        (yyval.varialbe_list)->chain = (yyvsp[(1) - (1)].varialbe)->chain;
-
+        modifyVariableNodeDefine((yyvsp[(1) - (1)].variable)->index_symbol);
+        (yyval.variable_list) = ALLOCATE_STRUCT_MEMORY(VariableList);
+        (yyval.variable_list)->chain = (yyvsp[(1) - (1)].variable)->chain;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // $$->ast_node = $1->ast_node;
+        printDebugVariableInformation();
     }
     break;
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 263 "pascal_simple_compiler.y"
+#line 250 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(2) - (2)].statement)->chain;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT_LIST,
-                          "statement_list");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (2)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (2)].statement)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
+        //                   "statement_list");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
     break;
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 273 "pascal_simple_compiler.y"
+#line 260 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(1) - (1)].statement)->chain;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT_LIST,
-                          "statement_list");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (1)].statement)->ast_node));
+        (yyval.statement)->ast_node = (yyvsp[(1) - (1)].statement)->ast_node;
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
+        //                   "statement_list");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
     }
     break;
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 283 "pascal_simple_compiler.y"
+#line 271 "pascal_simple_compiler.y"
     {
-        struct SyntaxTreeNode **ast_semicolon_node;
-        ast_semicolon_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode(ast_semicolon_node);
-        setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
+        // struct SyntaxTreeNode **ast_semicolon_node;
+        // ast_semicolon_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_semicolon_node);
+        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
 
         backpatchQuaternionNodeChain((yyvsp[(1) - (2)].statement)->chain, g_quaternion_index);
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT_SEMICOLON,
-                          "statement;");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (2)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_semicolon_node);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_SEMICOLON,
+        //                   "statement;");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
+        printDebugQuaternionInformation();
+        // printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     break;
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 299 "pascal_simple_compiler.y"
+#line 289 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = 0;
         (yyval.statement)->ast_node = (yyvsp[(1) - (1)].statement)->ast_node;
     }
@@ -1741,64 +1731,67 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 304 "pascal_simple_compiler.y"
+#line 294 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = mergeQuaternionNodeChain((yyvsp[(1) - (2)].statement)->chain, (yyvsp[(2) - (2)].statement)->chain);
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT, "statement");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (2)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (2)].statement)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 313 "pascal_simple_compiler.y"
+#line 304 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = mergeQuaternionNodeChain((yyvsp[(1) - (2)].statement)->chain, (yyvsp[(2) - (2)].statement)->chain);
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT, "statement");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (2)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (2)].statement)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 322 "pascal_simple_compiler.y"
+#line 314 "pascal_simple_compiler.y"
     {
         backpatchQuaternionNodeChain((yyvsp[(2) - (2)].statement)->chain, (yyvsp[(1) - (2)].while_statement)->loop_start);
         generateQuaternionNode(0, 0, (yyvsp[(1) - (2)].while_statement)->loop_start, OPCODE_JMP);
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(1) - (2)].while_statement)->chain;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT, "statement");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (2)].while_statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (2)].statement)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 19:
 /* Line 1792 of yacc.c  */
-#line 333 "pascal_simple_compiler.y"
+#line 326 "pascal_simple_compiler.y"
     {
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(1) - (1)].statement)->chain;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_STATEMENT, "statement");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (1)].statement)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
     }
     break;
 
   case 20:
 /* Line 1792 of yacc.c  */
-#line 341 "pascal_simple_compiler.y"
+#line 334 "pascal_simple_compiler.y"
     {
         printf("");
     }
@@ -1806,158 +1799,181 @@ yyreduce:
 
   case 21:
 /* Line 1792 of yacc.c  */
-#line 345 "pascal_simple_compiler.y"
+#line 338 "pascal_simple_compiler.y"
     {
-        struct SyntaxTreeNode **ast_begin_node, **ast_end_node;
-        ast_begin_node = createSyntaxTreeNodePointer();
-        ast_end_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode(ast_begin_node);
-        createSyntaxTreeNode(ast_end_node);
-        setSyntaxTreeNode(*ast_begin_node, NODE_BEGIN, "begin");
-        setSyntaxTreeNode(*ast_end_node, NODE_THEN, "end");
+        // struct SyntaxTreeNode **ast_begin_node, **ast_end_node;
+        // ast_begin_node = createSyntaxTreeNodePointer();
+        // ast_end_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_begin_node);
+        // createSyntaxTreeNode(ast_end_node);
+        // setSyntaxTreeNode(*ast_begin_node, NODE_BEGIN, "begin");
+        // setSyntaxTreeNode(*ast_end_node, NODE_THEN, "end");
 
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(2) - (3)].statement)->chain;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_BEGIN_END, "begin_end");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_begin_node);
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_end_node);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_BEGIN_END, "begin_end");
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_begin_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_end_node);
     }
     break;
 
   case 22:
 /* Line 1792 of yacc.c  */
-#line 363 "pascal_simple_compiler.y"
+#line 356 "pascal_simple_compiler.y"
     {
-        modifyVariableNode((yyvsp[(1) - (3)].varialbe)->index_symbol, (yyvsp[(3) - (3)].expression)->type, (yyvsp[(3) - (3)].expression)->value);
-        generateQuaternionNode((yyvsp[(3) - (3)].expression)->index_symbol, 0, (yyvsp[(1) - (3)].varialbe)->index_symbol,
+        if (getVariableNodeDefine((yyvsp[(1) - (3)].variable)->index_symbol) == FALSE) {
+            printf("\nError, variable is used but not defined!\n");
+            exit(EXIT_FAILURE);
+        }
+        else if (getVariableNodeDefine((yyvsp[(1) - (3)].variable)->index_symbol) == ERROR) {
+            printf("\nError, there is not the variable!\n");
+            exit(EXIT_FAILURE);
+        }
+
+        modifyVariableNode((yyvsp[(1) - (3)].variable)->index_symbol, (yyvsp[(3) - (3)].expression)->type, (yyvsp[(3) - (3)].expression)->value);
+        generateQuaternionNode((yyvsp[(3) - (3)].expression)->index_symbol, 0, (yyvsp[(1) - (3)].variable)->index_symbol,
                                OPCODE_ASSIGN);
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.statement)->ast_node);
         setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_ASSIGN, ":=");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (3)].varialbe)->ast_node));
+        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (3)].variable)->ast_node));
         addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(3) - (3)].expression)->ast_node));
+        printDebugInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.statement)->ast_node));
     }
     break;
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 375 "pascal_simple_compiler.y"
+#line 379 "pascal_simple_compiler.y"
     {
         int temp = g_quaternion_index;
-        struct SyntaxTreeNode **ast_else_node;
-        ast_else_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode(ast_else_node);
-        setSyntaxTreeNode(*(ast_else_node), NODE_ELSE, "else");
+        // struct SyntaxTreeNode **ast_else_node;
+        // ast_else_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_else_node);
+        // setSyntaxTreeNode(*(ast_else_node), NODE_ELSE, "else");
 
         generateQuaternionNode(0, 0, 0, OPCODE_JMP);
         backpatchQuaternionNodeChain((yyvsp[(1) - (3)].statement)->chain, g_quaternion_index);
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = mergeQuaternionNodeChain((yyvsp[(2) - (3)].statement)->chain, temp);
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_IF_THEN_ELSE, "if_then_else");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(1) - (3)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (3)].statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_else_node);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN_ELSE, "if_then_else");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_else_node);
+        printDebugQuaternionInformation();
     }
     break;
 
   case 24:
 /* Line 1792 of yacc.c  */
-#line 394 "pascal_simple_compiler.y"
+#line 399 "pascal_simple_compiler.y"
     {
-        struct SyntaxTreeNode **ast_if_node, **ast_then_node;
-        ast_if_node = createSyntaxTreeNodePointer();
-        ast_then_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode(ast_if_node);
-        createSyntaxTreeNode(ast_then_node);
-        setSyntaxTreeNode(*ast_if_node, NODE_IF, "if");
-        setSyntaxTreeNode(*ast_then_node, NODE_THEN, "then");
+        // struct SyntaxTreeNode **ast_if_node, **ast_then_node;
+        // ast_if_node = createSyntaxTreeNodePointer();
+        // ast_then_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_if_node);
+        // createSyntaxTreeNode(ast_then_node);
+        // setSyntaxTreeNode(*ast_if_node, NODE_IF, "if");
+        // setSyntaxTreeNode(*ast_then_node, NODE_THEN, "then");
 
         backpatchQuaternionNodeChain((yyvsp[(2) - (3)].bool_expression)->chain_true, g_quaternion_index);
-        (yyval.statement) = MALLOC_YACC_STRUCT(Statement);
+        (yyval.statement) = ALLOCATE_STRUCT_MEMORY(Statement);
         (yyval.statement)->chain = (yyvsp[(2) - (3)].bool_expression)->chain_false;
-        (yyval.statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.statement)->ast_node), NODE_IF_THEN, "if_then");
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_if_node);
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *((yyvsp[(2) - (3)].bool_expression)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.statement)->ast_node), *ast_then_node);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN, "if_then");
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_if_node);
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_then_node);
+        printDebugQuaternionInformation();
     }
     break;
 
   case 25:
 /* Line 1792 of yacc.c  */
-#line 414 "pascal_simple_compiler.y"
+#line 420 "pascal_simple_compiler.y"
     {
-        struct SyntaxTreeNode **ast_do_node;
-        ast_do_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode(ast_do_node);
-        setSyntaxTreeNode(*ast_do_node, NODE_DO, "do");
+        // struct SyntaxTreeNode **ast_do_node;
+        // ast_do_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode(ast_do_node);
+        // setSyntaxTreeNode(*ast_do_node, NODE_DO, "do");
 
         backpatchQuaternionNodeChain((yyvsp[(2) - (3)].bool_expression)->chain_true, g_quaternion_index);
-        (yyval.while_statement) = MALLOC_YACC_STRUCT(WhileStatement);
+        (yyval.while_statement) = ALLOCATE_STRUCT_MEMORY(WhileStatement);
         (yyval.while_statement)->chain = (yyvsp[(2) - (3)].bool_expression)->chain_false;
         (yyval.while_statement)->loop_start = (yyvsp[(1) - (3)].while_statement)->loop_start;
-        (yyval.while_statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.while_statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.while_statement)->ast_node), NODE_WHILE_DO, "while_do");
-        addSyntaxTreeSonNode(*((yyval.while_statement)->ast_node), *((yyvsp[(1) - (3)].while_statement)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.while_statement)->ast_node), *ast_do_node);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_WHILE_DO, "while_do");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *ast_do_node);
+        printDebugQuaternionInformation();
     }
     break;
 
   case 26:
 /* Line 1792 of yacc.c  */
-#line 431 "pascal_simple_compiler.y"
+#line 438 "pascal_simple_compiler.y"
     {
-        (yyval.while_statement) = MALLOC_YACC_STRUCT(WhileStatement);
+        (yyval.while_statement) = ALLOCATE_STRUCT_MEMORY(WhileStatement);
         (yyval.while_statement)->chain = 0;
         (yyval.while_statement)->loop_start = g_quaternion_index;
-        (yyval.while_statement)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.while_statement)->ast_node);
-        setSyntaxTreeNode(*((yyval.while_statement)->ast_node), NODE_WHILE, "while");
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_WHILE, "while");
+        printDebugQuaternionInformation();
     }
     break;
 
   case 27:
 /* Line 1792 of yacc.c  */
-#line 440 "pascal_simple_compiler.y"
+#line 448 "pascal_simple_compiler.y"
     {
-        performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_SUB, NODE_SUB, "+");
+        (yyval.expression) = performArithmeticOperation((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_ADD, NODE_ADD, "+");
+        printDebugInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.expression)->ast_node));
     }
     break;
 
   case 28:
 /* Line 1792 of yacc.c  */
-#line 443 "pascal_simple_compiler.y"
+#line 453 "pascal_simple_compiler.y"
     {
-        performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_SUB, NODE_SUB, "-");
+        (yyval.expression) = performArithmeticOperation((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_SUB, NODE_SUB, "-");
+        printDebugInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.expression)->ast_node));
     }
     break;
 
   case 29:
 /* Line 1792 of yacc.c  */
-#line 446 "pascal_simple_compiler.y"
+#line 458 "pascal_simple_compiler.y"
     {
-        performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_MUL, NODE_MUL, "*");
+        (yyval.expression) = performArithmeticOperation((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_MUL, NODE_MUL, "*");
+        printDebugInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.expression)->ast_node));
     }
     break;
 
   case 30:
 /* Line 1792 of yacc.c  */
-#line 449 "pascal_simple_compiler.y"
+#line 463 "pascal_simple_compiler.y"
     {
-        performArithmeticOperation((yyval.expression), (yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_DIV, NODE_DIV, "/");
+        (yyval.expression) = performArithmeticOperation((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), OPCODE_DIV, NODE_DIV, "/");
+        printDebugInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.expression)->ast_node));
     }
     break;
 
   case 31:
 /* Line 1792 of yacc.c  */
-#line 452 "pascal_simple_compiler.y"
+#line 468 "pascal_simple_compiler.y"
     {
         (yyval.expression) = (yyvsp[(2) - (3)].expression);
     }
@@ -1965,51 +1981,68 @@ yyreduce:
 
   case 32:
 /* Line 1792 of yacc.c  */
-#line 455 "pascal_simple_compiler.y"
+#line 471 "pascal_simple_compiler.y"
     {
-        int  index_temp;
+        int  index_symbol;
+        char **temp_name = (char **)malloc(sizeof(char));
         char result[STRING_WITH_MINUS_SIZE] = "-";
 
         strcat(result, (yyvsp[(2) - (2)].expression)->value);
 
         if ((yyvsp[(2) - (2)].expression)->index_symbol > 0) {
-            index_temp = generateConstantNode((yyvsp[(2) - (2)].expression)->type, result);
+            index_symbol = generateConstantNode((yyvsp[(2) - (2)].expression)->type, result);
         }
         else {
-            index_temp = generateVariableNode((yyvsp[(2) - (2)].expression)->type, VARIABLE_TEMP, result,
-                                              "temp");
+           if (!generateTempVariableName(temp_name)) {
+                *temp_name = "temp";
+            }
+            index_symbol = generateVariableNode((yyvsp[(2) - (2)].expression)->type, VARIABLE_TEMP, result,
+                                                *temp_name);
+            free(*temp_name);
+            *temp_name = NULL;
+            g_temp_count++;
         }
 
-        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
-        (yyval.expression)->index_symbol = index_temp;
+        (yyval.expression) = ALLOCATE_STRUCT_MEMORY(Expression);
+        (yyval.expression)->index_symbol = index_symbol;
         (yyval.expression)->index_quaternion = generateQuaternionNode((yyvsp[(2) - (2)].expression)->index_symbol, 0,
                                                       (yyval.expression)->index_symbol,
                                                       OPCODE_MINUS);
-        (yyval.expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.expression)->ast_node), NODE_NULL, result);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_NULL, result);
+        printDebugInformation();
     }
     break;
 
   case 33:
 /* Line 1792 of yacc.c  */
-#line 478 "pascal_simple_compiler.y"
+#line 502 "pascal_simple_compiler.y"
     {
-        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
-        (yyval.expression)->index_symbol = (yyvsp[(1) - (1)].varialbe)->index_symbol;
-        (yyval.expression)->type  = (yyvsp[(1) - (1)].varialbe)->type;
-        (yyval.expression)->value = (yyvsp[(1) - (1)].varialbe)->value;
-        (yyval.expression)->name  = (yyvsp[(1) - (1)].varialbe)->name;
+        if (getVariableNodeDefine((yyvsp[(1) - (1)].variable)->index_symbol) == FALSE) {
+            printf("\nError, variable is used but not defined!\n");
+            exit(EXIT_FAILURE);
+        }
+        else if (getVariableNodeDefine((yyvsp[(1) - (1)].variable)->index_symbol) == ERROR) {
+            printf("\nError, there is not the variable!\n");
+            exit(EXIT_FAILURE);
+        }
+
+        (yyval.expression) = ALLOCATE_STRUCT_MEMORY(Expression);
+        (yyval.expression)->index_symbol = (yyvsp[(1) - (1)].variable)->index_symbol;
+        (yyval.expression)->type  = (yyvsp[(1) - (1)].variable)->type;
+        (yyval.expression)->value = (yyvsp[(1) - (1)].variable)->value;
+        (yyval.expression)->name  = (yyvsp[(1) - (1)].variable)->name;
         (yyval.expression)->index_quaternion = 0;
-        (yyval.expression)->ast_node = (yyvsp[(1) - (1)].varialbe)->ast_node;
+        (yyval.expression)->ast_node = (yyvsp[(1) - (1)].variable)->ast_node;
     }
     break;
 
   case 34:
 /* Line 1792 of yacc.c  */
-#line 487 "pascal_simple_compiler.y"
+#line 520 "pascal_simple_compiler.y"
     {
-        (yyval.expression) = MALLOC_YACC_STRUCT(Expression);
+        (yyval.expression) = ALLOCATE_STRUCT_MEMORY(Expression);
         (yyval.expression)->index_symbol = (yyvsp[(1) - (1)].constant)->index_symbol;
         (yyval.expression)->type  = (yyvsp[(1) - (1)].constant)->type;
         (yyval.expression)->value = (yyvsp[(1) - (1)].constant)->value;
@@ -2021,8 +2054,10 @@ yyreduce:
 
   case 35:
 /* Line 1792 of yacc.c  */
-#line 497 "pascal_simple_compiler.y"
+#line 530 "pascal_simple_compiler.y"
     {
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
+
         if ((yyvsp[(1) - (3)].expression)->type == TYPE_INTEGER && (yyvsp[(3) - (3)].expression)->type == TYPE_INTEGER) {
             JUDGE_BOOL_EXPRESSION((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), (yyval.bool_expression), (yyvsp[(2) - (3)].relation_operator), atoi);
         }
@@ -2030,222 +2065,267 @@ yyreduce:
             JUDGE_BOOL_EXPRESSION((yyvsp[(1) - (3)].expression), (yyvsp[(3) - (3)].expression), (yyval.bool_expression), (yyvsp[(2) - (3)].relation_operator), atof);
         }
         else {
-            printf("Warning, \'%s\' type mismatch \'%s\' type!", (yyvsp[(1) - (3)].expression)->value,
+            printf("\nWarning, type [%s] mismatch type [%s]\n!", (yyvsp[(1) - (3)].expression)->value,
                 (yyvsp[(3) - (3)].expression)->value);
-            exit(0);
+            exit(EXIT_FAILURE);
         }
 
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
         (yyval.bool_expression)->chain_true  = g_quaternion_index;
         (yyval.bool_expression)->chain_false = g_quaternion_index + 1;
         generateQuaternionNode((yyvsp[(1) - (3)].expression)->index_symbol, (yyvsp[(3) - (3)].expression)->index_symbol, 0,
-                               (yyvsp[(2) - (3)].relation_operator).type_opcode);
+                               (yyvsp[(2) - (3)].relation_operator)->type_opcode);
         generateQuaternionNode(0, 0, 0, OPCODE_JMP);
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), (yyvsp[(2) - (3)].relation_operator).type_ast, (yyvsp[(2) - (3)].relation_operator).value);
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(1) - (3)].expression)->ast_node));
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(3) - (3)].expression)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), $2->type_ast, $2->value);
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 36:
 /* Line 1792 of yacc.c  */
-#line 522 "pascal_simple_compiler.y"
+#line 557 "pascal_simple_compiler.y"
     {
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->chain_true = (yyvsp[(2) - (2)].bool_expression)->chain_true;
         (yyval.bool_expression)->chain_false = mergeQuaternionNodeChain((yyvsp[(1) - (2)].bool_expression)->chain_false,
-                                               (yyvsp[(2) - (2)].bool_expression)->chain_false);
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        addSyntaxTreeSonNode(*((yyvsp[(1) - (2)].bool_expression)->ast_node), *((yyvsp[(2) - (2)].bool_expression)->ast_node));
-        (yyval.bool_expression)->ast_node = (yyvsp[(1) - (2)].bool_expression)->ast_node;
+                                                   (yyvsp[(2) - (2)].bool_expression)->chain_false);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        // $$->ast_node = $1->ast_node;
+        printDebugQuaternionInformation();
     }
     break;
 
   case 37:
 /* Line 1792 of yacc.c  */
-#line 531 "pascal_simple_compiler.y"
+#line 567 "pascal_simple_compiler.y"
     {
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->chain_false = (yyvsp[(2) - (2)].bool_expression)->chain_false;
         (yyval.bool_expression)->chain_true = mergeQuaternionNodeChain((yyvsp[(1) - (2)].bool_expression)->chain_true,
-                                              (yyvsp[(2) - (2)].bool_expression)->chain_true);
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        addSyntaxTreeSonNode(*((yyvsp[(1) - (2)].bool_expression)->ast_node), *((yyvsp[(2) - (2)].bool_expression)->ast_node));
-        (yyval.bool_expression)->ast_node = (yyvsp[(1) - (2)].bool_expression)->ast_node;
+                                                  (yyvsp[(2) - (2)].bool_expression)->chain_true);
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        // $$->ast_node = $1->ast_node;
+        printDebugQuaternionInformation();
     }
     break;
 
   case 38:
 /* Line 1792 of yacc.c  */
-#line 540 "pascal_simple_compiler.y"
+#line 577 "pascal_simple_compiler.y"
     {
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->true_or_false = ((yyvsp[(2) - (2)].bool_expression)->true_or_false == TRUE) ? FALSE : TRUE;
         (yyval.bool_expression)->chain_true = (yyvsp[(2) - (2)].bool_expression)->chain_false;
         (yyval.bool_expression)->chain_false = (yyvsp[(2) - (2)].bool_expression)->chain_true;
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_NOT, "not");
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(2) - (2)].bool_expression)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_NOT, "not");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 39:
 /* Line 1792 of yacc.c  */
-#line 550 "pascal_simple_compiler.y"
+#line 588 "pascal_simple_compiler.y"
     {
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->true_or_false = (yyvsp[(2) - (3)].bool_expression)->true_or_false;
         (yyval.bool_expression)->chain_true = (yyvsp[(2) - (3)].bool_expression)->chain_true;
         (yyval.bool_expression)->chain_false = (yyvsp[(2) - (3)].bool_expression)->chain_false;
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_LP_RP, "()");
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(2) - (3)].bool_expression)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_LP_RP, "()");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 40:
 /* Line 1792 of yacc.c  */
-#line 561 "pascal_simple_compiler.y"
+#line 600 "pascal_simple_compiler.y"
     {
         backpatchQuaternionNodeChain((yyvsp[(1) - (2)].bool_expression)->chain_true, g_quaternion_index);
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->true_or_false = (yyvsp[(1) - (2)].bool_expression)->true_or_false;
         (yyval.bool_expression)->chain_false = (yyvsp[(1) - (2)].bool_expression)->chain_false;
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_AND, "and");
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(1) - (2)].bool_expression)->ast_node));
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_AND, "and");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 41:
 /* Line 1792 of yacc.c  */
-#line 572 "pascal_simple_compiler.y"
+#line 612 "pascal_simple_compiler.y"
     {
         backpatchQuaternionNodeChain((yyvsp[(1) - (2)].bool_expression)->chain_true, g_quaternion_index);
-        (yyval.bool_expression) = MALLOC_YACC_STRUCT(BoolExpression);
+        (yyval.bool_expression) = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         (yyval.bool_expression)->true_or_false = (yyvsp[(1) - (2)].bool_expression)->true_or_false;
         (yyval.bool_expression)->chain_true = (yyvsp[(1) - (2)].bool_expression)->chain_true;
-        (yyval.bool_expression)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.bool_expression)->ast_node);
-        setSyntaxTreeNode(*((yyval.bool_expression)->ast_node), NODE_OR, "or");
-        addSyntaxTreeSonNode(*((yyval.bool_expression)->ast_node), *((yyvsp[(1) - (2)].bool_expression)->ast_node));
-
+        // $$->ast_node = createSyntaxTreeNodePointer();
+        // createSyntaxTreeNode($$->ast_node);
+        // setSyntaxTreeNode(*($$->ast_node), NODE_OR, "or");
+        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        printDebugQuaternionInformation();
     }
     break;
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 584 "pascal_simple_compiler.y"
+#line 624 "pascal_simple_compiler.y"
     {
-        (yyval.varialbe) = MALLOC_YACC_STRUCT(Variable);
-        (yyval.varialbe)->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER, NULL,
-                                                (yyvsp[(1) - (1)].string));
-        (yyval.varialbe)->chain = (yyval.varialbe)->index_symbol;
-        (yyval.varialbe)->type  = TYPE_NULL;
-        (yyval.varialbe)->value = NULL;
-        (yyval.varialbe)->name  = (yyvsp[(1) - (1)].string);
-        (yyval.varialbe)->ast_node = createSyntaxTreeNodePointer();
-        createSyntaxTreeNode((yyval.varialbe)->ast_node);
-        setSyntaxTreeNode(*((yyval.varialbe)->ast_node), NODE_NULL, (yyvsp[(1) - (1)].string));
+        (yyval.variable) = ALLOCATE_STRUCT_MEMORY(Variable);
+
+        if (judgeVariableNodeExist((yyvsp[(1) - (1)].string))) {
+            VariableTableNode *variable_temp_node =
+                getVariableNode(getVariableNodeIndex((yyvsp[(1) - (1)].string)));
+            (yyval.variable)->index_symbol = variable_temp_node->index;
+            (yyval.variable)->chain = variable_temp_node->chain;
+            (yyval.variable)->type = variable_temp_node->variable->type;
+
+            if (variable_temp_node->variable->value == NULL) {
+                (yyval.variable)->value = NULL;
+            }
+            else {
+                (yyval.variable)->value =
+                    (char *)malloc(
+                    strlen(variable_temp_node->variable->value) + 1);
+                strcpy((yyval.variable)->value, variable_temp_node->variable->value);
+            }
+
+            (yyval.variable)->name =
+                (char *)malloc(strlen(variable_temp_node->variable->name) + 1);
+            strcpy((yyval.variable)->name, variable_temp_node->variable->name);
+        }
+        else {
+            (yyval.variable)->index_symbol = generateVariableNode(TYPE_NULL, VARIABLE_USER,
+                                                    NULL, (yyvsp[(1) - (1)].string));
+            (yyval.variable)->chain = (yyval.variable)->index_symbol;
+            (yyval.variable)->type  = TYPE_NULL;
+            (yyval.variable)->value = NULL;
+            (yyval.variable)->name = (char *)malloc(strlen((yyvsp[(1) - (1)].string)) + 1);
+            strcpy((yyval.variable)->name, (yyvsp[(1) - (1)].string));
+        }
+
+        (yyval.variable)->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode((yyval.variable)->ast_node);
+        setSyntaxTreeNode(*((yyval.variable)->ast_node), NODE_NULL, (yyvsp[(1) - (1)].string));
+        printDebugVariableInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.variable)->ast_node));
     }
     break;
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 597 "pascal_simple_compiler.y"
+#line 665 "pascal_simple_compiler.y"
     {
-        (yyval.constant) = MALLOC_YACC_STRUCT(Constant);
+        (yyval.constant) = ALLOCATE_STRUCT_MEMORY(Constant);
         (yyval.constant)->index_symbol = generateConstantNode(TYPE_INTEGER, (yyvsp[(1) - (1)].string));
         (yyval.constant)->type  = TYPE_INTEGER;
-        (yyval.constant)->value = (yyvsp[(1) - (1)].string);
+        (yyval.constant)->value = (char *)malloc(strlen((yyvsp[(1) - (1)].string)) + 1);
+        strcpy((yyval.constant)->value, (yyvsp[(1) - (1)].string));
         (yyval.constant)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.constant)->ast_node);
         setSyntaxTreeNode(*((yyval.constant)->ast_node), NODE_INTEGER, (yyvsp[(1) - (1)].string));
+        printDebugConstantInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.constant)->ast_node));
     }
     break;
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 606 "pascal_simple_compiler.y"
+#line 677 "pascal_simple_compiler.y"
     {
-        (yyval.constant) = MALLOC_YACC_STRUCT(Constant);
+        (yyval.constant) = ALLOCATE_STRUCT_MEMORY(Constant);
         (yyval.constant)->index_symbol = generateConstantNode(TYPE_REAL, (yyvsp[(1) - (1)].string));
         (yyval.constant)->type  = TYPE_REAL;
-        (yyval.constant)->value = (yyvsp[(1) - (1)].string);
+        (yyval.constant)->value = (char *)malloc(strlen((yyvsp[(1) - (1)].string)) + 1);
+        strcpy((yyval.constant)->value, (yyvsp[(1) - (1)].string));
         (yyval.constant)->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode((yyval.constant)->ast_node);
         setSyntaxTreeNode(*((yyval.constant)->ast_node), NODE_REAL, (yyvsp[(1) - (1)].string));
+        printDebugConstantInformation();
+        printDebugAbstractSyntaxTreeInformation(*((yyval.constant)->ast_node));
     }
     break;
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 616 "pascal_simple_compiler.y"
+#line 690 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_LT;
-        (yyval.relation_operator).type_opcode = OPCODE_JLT;
-        (yyval.relation_operator).value       = "LT";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_LT;
+        (yyval.relation_operator)->type_opcode = OPCODE_JLT;
+        (yyval.relation_operator)->value       = "LT";
     }
     break;
 
   case 46:
 /* Line 1792 of yacc.c  */
-#line 621 "pascal_simple_compiler.y"
+#line 696 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_GT;
-        (yyval.relation_operator).type_opcode = OPCODE_JGT;
-        (yyval.relation_operator).value       = "GT";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_GT;
+        (yyval.relation_operator)->type_opcode = OPCODE_JGT;
+        (yyval.relation_operator)->value       = "GT";
     }
     break;
 
   case 47:
 /* Line 1792 of yacc.c  */
-#line 626 "pascal_simple_compiler.y"
+#line 702 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_LE;
-        (yyval.relation_operator).type_opcode = OPCODE_JLE;
-        (yyval.relation_operator).value       = "LE";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_LE;
+        (yyval.relation_operator)->type_opcode = OPCODE_JLE;
+        (yyval.relation_operator)->value       = "LE";
     }
     break;
 
   case 48:
 /* Line 1792 of yacc.c  */
-#line 631 "pascal_simple_compiler.y"
+#line 708 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_GE;
-        (yyval.relation_operator).type_opcode = OPCODE_JGE;
-        (yyval.relation_operator).value       = "GE";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_GE;
+        (yyval.relation_operator)->type_opcode = OPCODE_JGE;
+        (yyval.relation_operator)->value       = "GE";
     }
     break;
 
   case 49:
 /* Line 1792 of yacc.c  */
-#line 636 "pascal_simple_compiler.y"
+#line 714 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_EQ;
-        (yyval.relation_operator).type_opcode = OPCODE_JEQ;
-        (yyval.relation_operator).value       = "EQ";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_EQ;
+        (yyval.relation_operator)->type_opcode = OPCODE_JEQ;
+        (yyval.relation_operator)->value       = "EQ";
     }
     break;
 
   case 50:
 /* Line 1792 of yacc.c  */
-#line 641 "pascal_simple_compiler.y"
+#line 720 "pascal_simple_compiler.y"
     {
-        (yyval.relation_operator).type_ast    = NODE_NE;
-        (yyval.relation_operator).type_opcode = OPCODE_JNE;
-        (yyval.relation_operator).value       = "NE";
+        (yyval.relation_operator) = ALLOCATE_STRUCT_MEMORY(RelationOperator);
+        (yyval.relation_operator)->type_ast    = NODE_NE;
+        (yyval.relation_operator)->type_opcode = OPCODE_JNE;
+        (yyval.relation_operator)->value       = "NE";
     }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 2249 "pascal_simple_compiler_yacc.c"
+#line 2329 "pascal_simple_compiler_yacc.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2477,64 +2557,10 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 647 "pascal_simple_compiler.y"
+#line 727 "pascal_simple_compiler.y"
 
-
-void performArithmeticOperation(struct Expression *expr_parent_node,
-                                struct Expression *expr_l_son_node,
-                                struct Expression *expr_r_son_node,
-                                int type_quaternion,
-                                int type_syntaxtree,
-                                char *opcode)
+int yyerror(const char *string)
 {
-    int    index_temp;
-    int    type_a, type_b;
-    int    result_type;
-    int    result_int;
-    double result_real;
-    char   result[STRING_SIZE];
-    char   *value_a, *value_b;
-
-    type_a  = getSymbolNodeType(expr_l_son_node->index_symbol);
-    type_b  = getSymbolNodeType(expr_r_son_node->index_symbol);
-    value_a = getSymbolNodeValue(expr_l_son_node->index_symbol);
-    value_b = getSymbolNodeValue(expr_r_son_node->index_symbol);
-
-    if (type_a == TYPE_INTEGER && type_b == TYPE_INTEGER) {
-        result_int = atoi(value_a) + atoi(value_b);
-        sprintf(result, "%d", result_int);
-        result_type = TYPE_INTEGER;
-    }
-    else if (type_a == TYPE_REAL && type_b == TYPE_REAL) {
-        result_real = atof(value_a) + atof(value_b);
-        sprintf(result, "%lf", result_real);
-        result_type = TYPE_REAL;
-    }
-    else {
-        printf("Warning, \'%s\' type mismatch \'%s\' type!", value_a, value_b);
-        exit(0);
-    }
-
-    index_temp = generateVariableNode(result_type, VARIABLE_TEMP, result,
-                                      "temp");
-    expr_parent_node = MALLOC_YACC_STRUCT(Expression);
-    expr_parent_node->index_symbol = index_temp;
-    expr_parent_node->index_quaternion = generateQuaternionNode(
-        expr_l_son_node->index_symbol,
-        expr_r_son_node->index_symbol,
-        index_temp,
-        type_quaternion);
-    expr_parent_node->ast_node = createSyntaxTreeNodePointer();
-    createSyntaxTreeNode(expr_parent_node->ast_node);
-    setSyntaxTreeNode(*(expr_parent_node->ast_node), type_syntaxtree, opcode);
-    addSyntaxTreeSonNode(*(expr_parent_node->ast_node),
-                         *(expr_l_son_node->ast_node));
-    addSyntaxTreeSonNode(*(expr_parent_node->ast_node),
-                         *(expr_r_son_node->ast_node));
-}
-
-int yyerror(char *string)
-{
-    printf("%s!\n",string);
+    printf("\n%d: %s at '%s'!\n", yylineno, string, yytext);
     return 0;
 }

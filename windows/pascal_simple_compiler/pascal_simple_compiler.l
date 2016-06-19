@@ -1,13 +1,13 @@
 %option noyywrap yylineno
 
 %{
-    #include "pascal_simple_compiler_yacc.h"
+#include "pascal_simple_compiler_yacc.h"
 %}
 
-LETTER [A-Za-z]
-ALNUM  [A-Za-z0-9]
+LETTER [A-Za-z_]
+ALNUM  [A-Za-z0-9_]
 DIGIT  [0-9]
-SPACE  [\t\n\040]
+SPACE  [\t\n ]
 
 %%
 [Bb][eE][Gg][iI][Nn]                  { ECHO; return STATEMENT_BEGIN; }

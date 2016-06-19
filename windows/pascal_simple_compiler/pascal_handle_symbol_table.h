@@ -13,6 +13,10 @@
 #define VARIABLE_USER  650
 #define VARIABLE_TEMP  651
 
+#define TRUE           1
+#define FALSE          0
+#define ERROR         -1
+
 typedef struct ConstantTable {
     int  type;
     char *value;
@@ -34,29 +38,39 @@ typedef struct VariableTable {
 typedef struct VariableTableNode {
     int                      index;
     int                      chain;
+    int                      define;
     VariableTable            *variable;
     struct VariableTableNode *next;
 } VariableTableNode;
 
 extern void createConstantNode(void);
 extern void createVariableNode(void);
+extern void deleteConstantNode(void);
+extern void deleteVariableNode(void);
 extern void printAllConstantNode(void);
 extern void printAllVariableNode(void);
-extern void modifyConstantNodeValue(int index, char *value);
-extern void modifyVariableNodeValue(int index, char *value);
-extern void modifySymbolNodeValue(int index, char *value);
-extern void modifyVariableNode(int index, int type, char *value);
-extern void modifyVariableNodeChain(int index, int chain);
-extern void backpatchVariableNodeChain(int index, int type);
+extern int modifyConstantNodeValue(int index, char *value);
+extern int modifyVariableNodeValue(int index, char *value);
+extern int modifySymbolNodeValue(int index, char *value);
+extern int modifyVariableNode(int index, int type, char *value);
+extern int modifyVariableNodeChain(int index, int chain);
+extern int modifyVariableNodeDefine(int index);
+extern int backpatchVariableNodeChain(int index, int type);
 extern int generateConstantNode(int type, char *value);
 extern int generateVariableNode(int type, int flag, char *value, char *name);
 extern int getConstantNodeType(int index);
 extern int getVariableNodeType(int index);
 extern int getSymbolNodeType(int index);
+extern int getVariableNodeIndex(char *name);
+extern int getVariableNodeDefine(int index);
+extern int getVariableNodeNumber(char *name);
+extern int judgeVariableNodeExist(char *name);
 extern char *getConstantNodeValue(int index);
 extern char *getVariableNodeValue(int index);
 extern char *getSymbolNodeValue(int index);
+extern char *getSymbolNodeValueOrName(int index);
 extern ConstantTableNode *getConstantNode(int index);
 extern VariableTableNode *getVariableNode(int index);
 extern void *getSymbolNode(int index);
+
 #endif // PASCAL_HANDLE_SYMBOL_TABLE_H

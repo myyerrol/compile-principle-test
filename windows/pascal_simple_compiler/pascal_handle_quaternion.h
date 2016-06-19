@@ -13,7 +13,12 @@
 #define OPCODE_JGE    509
 #define OPCODE_JEQ    510
 #define OPCODE_JNE    511
-#define OPCODE_JMP    512
+#define OPCODE_JNZ    512
+#define OPCODE_JMP    513
+
+#define STRING_SIZE   20
+#define TRUE          1
+#define FALSE         0
 
 typedef struct QuaternionTable {
     int  argument_a;
@@ -29,8 +34,9 @@ typedef struct QuaternionTableNode {
 } QuaternionTableNode;
 
 extern void createQuaternionNode(void);
+extern void deleteQuaternionNode(void);
 extern void printAllQuaternionNode(void);
-extern void backpatchQuaternionNodeChain(int chain, int index);
+extern int backpatchQuaternionNodeChain(int chain, int index);
 extern int generateQuaternionNode(int argument_a, int argument_b, int result,
                                   int opcode);
 extern int getQuaternionNodeIndex(int argument_a, int argument_b, int result,

@@ -90,76 +90,22 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 82 "pascal_simple_compiler.y"
+#line 21 "pascal_simple_compiler.y"
 
-    int  type;
-    char *string;
-
-    struct Statement {
-        int                   chain;
-        struct SyntaxTreeNode **ast_node;
-    } *statement;
-
-    struct WhileStatement {
-        int                   chain;
-        int                   loop_start;
-        struct SyntaxTreeNode **ast_node;
-    } *while_statement;
-
-    struct BoolExpression {
-        int                   true_or_false;
-        int                   chain_true;
-        int                   chain_false;
-        struct SyntaxTreeNode **ast_node;
-    } *bool_expression;
-
-    struct Expression {
-        int                   type;
-        int                   index_symbol;
-        int                   index_quaternion;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *expression;
-
-    struct Symbol {
-        int                   type;
-        int                   index_symbol;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *symbol;
-
-    struct VariableList {
-        int                   chain;
-        struct SyntaxTreeNode **ast_node;
-    } *varialbe_list;
-
-    struct Variable {
-        int                   type;
-        int                   chain;
-        int                   index_symbol;
-        char                  *value;
-        char                  *name;
-        struct SyntaxTreeNode **ast_node;
-    } *varialbe;
-
-    struct Constant {
-        int                   type;
-        int                   index_symbol;
-        char                  *value;
-        struct SyntaxTreeNode **ast_node;
-    } *constant;
-
-    struct RelationOperator {
-        int                   type_ast;
-        int                   type_opcode;
-        char                  *value;
-    } relation_operator;
+    int                     type;
+    char                    *string;
+    struct Statement        *statement;
+    struct WhileStatement   *while_statement;
+    struct BoolExpression   *bool_expression;
+    struct Expression       *expression;
+    struct VariableList     *variable_list;
+    struct Variable         *variable;
+    struct Constant         *constant;
+    struct RelationOperator *relation_operator;
 
 
 /* Line 2058 of yacc.c  */
-#line 163 "pascal_simple_compiler_yacc.h"
+#line 109 "pascal_simple_compiler_yacc.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
