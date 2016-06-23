@@ -7,28 +7,28 @@
 void printConstantInformation(void)
 {
     printf("\n");
-    printAllConstantNode();
+    printConstantNode();
     printf("\n");
 }
 
 void printVariableInformation(void)
 {
     printf("\n");
-    printAllVariableNode();
+    printVariableNode();
     printf("\n");
 }
 
 void printQuaternionInformation(void)
 {
     printf("\n");
-    printAllQuaternionNode();
+    printQuaternionNode();
     printf("\n");
 }
 
 void printAbstractSyntaxTreeInformation(AbstractSyntaxTreeNode *ast_node)
 {
     printf("\n");
-    printAllAbstractSyntaxTreeNode(ast_node);
+    printAbstractSyntaxTreeNode(ast_node);
     printf("\n");
 }
 

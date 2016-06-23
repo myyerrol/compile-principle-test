@@ -47,7 +47,8 @@ int main(void)
     addSyntaxTreeSonNode(*ast_test_node_g, *ast_test_node_f);
     addSyntaxTreeSonNode(*ast_test_node_g, *ast_test_node_e);
 
-    printAllAbstractSyntaxTreeNode(*ast_test_node_g);
+    printAbstractSyntaxTreeNode(*ast_test_node_g);
+    deleteSyntaxTreeNode();
 
     return 0;
 }

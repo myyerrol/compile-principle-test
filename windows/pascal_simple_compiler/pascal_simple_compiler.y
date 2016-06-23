@@ -104,88 +104,56 @@ int yyerror(const char *string);
 %%
 ProgramDefinition
     : PROGRAM IDENTIFIER SEMICOLON SubProgram DOT {
-        // struct SyntaxTreeNode **ast_program_node, **ast_identifier_node;
-        // struct SyntaxTreeNode **ast_semicolon_node, **ast_dot_node;
-        // ast_program_node = createSyntaxTreeNodePointer();
-        // ast_identifier_node = createSyntaxTreeNodePointer();
-        // ast_semicolon_node = createSyntaxTreeNodePointer();
-        // ast_dot_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_program_node);
-        // createSyntaxTreeNode(ast_identifier_node);
-        // createSyntaxTreeNode(ast_semicolon_node);
-        // createSyntaxTreeNode(ast_dot_node);
-        // setSyntaxTreeNode(*ast_program_node, NODE_PROGRAM, "program");
-        // setSyntaxTreeNode(*ast_identifier_node, NODE_IDENTIFIER, $2);
-        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
-        // setSyntaxTreeNode(*ast_dot_node, NODE_DOT, ".");
-
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
-        $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_REDUCE, "/\\");
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_program_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_identifier_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *($4->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_dot_node);
-
+        $$->chain = $4->chain;
+        $$->ast_node = $4->ast_node;
         printInformation();
+        printAbstractSyntaxTreeInformation(*($$->ast_node));
         printf("Pascal program is identified successfully!!!\n");
         deleteConstantNode();
         deleteVariableNode();
+        deleteSyntaxTreeNode();
     }
 SubProgram
     : VariableDefinition CompoundStatement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_REDUCE, "/\\");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_PROGRAM, "program");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
     }
 VariableDefinition
     : VAR VariableDefinitionList SEMICOLON {
-        // struct SyntaxTreeNode **ast_var_node, **ast_semicolon_node;
-        // ast_var_node = createSyntaxTreeNodePointer();
-        // ast_semicolon_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_var_node);
-        // createSyntaxTreeNode(ast_semicolon_node);
-        // setSyntaxTreeNode(*ast_var_node, NODE_VAR, "var");
-        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
-
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
-        $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_VAR_SEMICOLON, "var;");
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_var_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
+        $$->chain = $2->chain;
+        $$->ast_node = $2->ast_node;
     }
 VariableDefinitionList
     : VariableDefinitionList SEMICOLON VariableDefinitionStatement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_SEMICOLON, ";");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_DEFINITION, "definition");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
     }
     | VariableDefinitionStatement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
-        $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // $$->ast_node = $1->ast_node;
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_DEFINITION, "definition");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
     }
 VariableDefinitionStatement
     : VariableList COLON Type {
         char *type;
-        // struct SyntaxTreeNode **ast_type_node;
-        // ast_type_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_type_node);
+        struct SyntaxTreeNode **ast_type_node;
+        ast_type_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode(ast_type_node);
 
         if ($3 == TYPE_INTEGER) {
             type = "integer";
@@ -194,16 +162,16 @@ VariableDefinitionStatement
             type = "real";
         }
 
-        // setSyntaxTreeNode(*ast_type_node, NODE_TYPE, type);
+        setSyntaxTreeNode(*ast_type_node, NODE_TYPE, type);
 
         backpatchVariableNodeChain($1->chain, $3);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
-        $$->chain = 0;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_COLON, ":");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_type_node);
+        $$->chain = $1->chain;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_COLON, ":");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *ast_type_node);
         printDebugVariableInformation();
     }
 Type
@@ -231,59 +199,43 @@ VariableList
         $$ = ALLOCATE_STRUCT_MEMORY(VariableList);
         modifyVariableNodeChain($1->chain, $3->chain);
         $$->chain = $1->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_COMMA, ",");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        addSyntaxTreeSonNode(*($1->ast_node), *($3->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugVariableInformation();
     }
     | Variable {
         modifyVariableNodeDefine($1->index_symbol);
         $$ = ALLOCATE_STRUCT_MEMORY(VariableList);
         $$->chain = $1->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // $$->ast_node = $1->ast_node;
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_VAR, "var");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
         printDebugVariableInformation();
     }
 StatementList
     : StatementSemicoln Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $2->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
-        //                   "statement_list");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
+        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $1->chain;
-        $$->ast_node = $1->ast_node;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_LIST,
-        //                   "statement_list");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
     }
 StatementSemicoln
     : StatementList SEMICOLON {
-        // struct SyntaxTreeNode **ast_semicolon_node;
-        // ast_semicolon_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_semicolon_node);
-        // setSyntaxTreeNode(*ast_semicolon_node, NODE_SEMICOLON, ";");
-
         backpatchQuaternionNodeChain($1->chain, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT_SEMICOLON,
-        //                   "statement;");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_semicolon_node);
+        $$->chain = $1->chain;
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
-        // printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
 Statement
     : AssignmentStatement {
@@ -294,21 +246,15 @@ Statement
     | IfStatementElse Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = mergeQuaternionNodeChain($1->chain, $2->chain);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
     | IfBoolExpressionThen Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = mergeQuaternionNodeChain($1->chain, $2->chain);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
     | WhileBoolExpressionDo Statement {
@@ -316,41 +262,23 @@ Statement
         generateQuaternionNode(0, 0, $1->loop_start, OPCODE_JMP);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $1->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
     | CompoundStatement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $1->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_STATEMENT, "statement");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        $$->ast_node = $1->ast_node;
     }
     | {
         printf("");
     }
 CompoundStatement
-    : STATEMENT_BEGIN StatementList STATEMENT_END {
-        // struct SyntaxTreeNode **ast_begin_node, **ast_end_node;
-        // ast_begin_node = createSyntaxTreeNodePointer();
-        // ast_end_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_begin_node);
-        // createSyntaxTreeNode(ast_end_node);
-        // setSyntaxTreeNode(*ast_begin_node, NODE_BEGIN, "begin");
-        // setSyntaxTreeNode(*ast_end_node, NODE_THEN, "end");
-
+    : STATEMENT_BEGIN StatementSemicoln STATEMENT_END {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $2->chain;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_BEGIN_END, "begin_end");
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_begin_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_end_node);
+        $$->ast_node = $2->ast_node;
     }
 AssignmentStatement
     : Variable ASSIGN Expression {
@@ -378,60 +306,35 @@ AssignmentStatement
 IfStatementElse
     : IfBoolExpressionThen Statement ELSE {
         int temp = g_quaternion_index;
-        // struct SyntaxTreeNode **ast_else_node;
-        // ast_else_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_else_node);
-        // setSyntaxTreeNode(*(ast_else_node), NODE_ELSE, "else");
-
         generateQuaternionNode(0, 0, 0, OPCODE_JMP);
         backpatchQuaternionNodeChain($1->chain, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = mergeQuaternionNodeChain($2->chain, temp);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN_ELSE, "if_then_else");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_else_node);
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
 IfBoolExpressionThen
     : IF BoolExpression THEN {
-        // struct SyntaxTreeNode **ast_if_node, **ast_then_node;
-        // ast_if_node = createSyntaxTreeNodePointer();
-        // ast_then_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_if_node);
-        // createSyntaxTreeNode(ast_then_node);
-        // setSyntaxTreeNode(*ast_if_node, NODE_IF, "if");
-        // setSyntaxTreeNode(*ast_then_node, NODE_THEN, "then");
-
         backpatchQuaternionNodeChain($2->chain_true, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->chain = $2->chain_false;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_IF_THEN, "if_then");
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_if_node);
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_then_node);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_IF, "if");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugQuaternionInformation();
     }
 WhileBoolExpressionDo
     : While BoolExpression DO {
-        // struct SyntaxTreeNode **ast_do_node;
-        // ast_do_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode(ast_do_node);
-        // setSyntaxTreeNode(*ast_do_node, NODE_DO, "do");
-
         backpatchQuaternionNodeChain($2->chain_true, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(WhileStatement);
         $$->chain = $2->chain_false;
         $$->loop_start = $1->loop_start;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_WHILE_DO, "while_do");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *ast_do_node);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_WHILE, "while");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugQuaternionInformation();
     }
 While
@@ -439,9 +342,6 @@ While
         $$ = ALLOCATE_STRUCT_MEMORY(WhileStatement);
         $$->chain = 0;
         $$->loop_start = g_quaternion_index;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_WHILE, "while");
         printDebugQuaternionInformation();
     }
 Expression
@@ -494,9 +394,10 @@ Expression
         $$->index_quaternion = generateQuaternionNode($2->index_symbol, 0,
                                                       $$->index_symbol,
                                                       OPCODE_MINUS);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_NULL, result);
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_MINUS, "-");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugInformation();
     }
     | Variable {
@@ -547,11 +448,11 @@ BoolExpression
         generateQuaternionNode($1->index_symbol, $3->index_symbol, 0,
                                $2->type_opcode);
         generateQuaternionNode(0, 0, 0, OPCODE_JMP);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), $2->type_ast, $2->value);
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
-        // addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), $2->type_ast, $2->value);
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
         printDebugQuaternionInformation();
     }
     | BoolExpressionAnd BoolExpression {
@@ -559,9 +460,8 @@ BoolExpression
         $$->chain_true = $2->chain_true;
         $$->chain_false = mergeQuaternionNodeChain($1->chain_false,
                                                    $2->chain_false);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
-        // $$->ast_node = $1->ast_node;
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
     | BoolExpressionOR BoolExpression {
@@ -569,9 +469,8 @@ BoolExpression
         $$->chain_false = $2->chain_false;
         $$->chain_true = mergeQuaternionNodeChain($1->chain_true,
                                                   $2->chain_true);
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
-        // $$->ast_node = $1->ast_node;
+        addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
+        $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
     }
     | NOT BoolExpression {
@@ -579,10 +478,10 @@ BoolExpression
         $$->true_or_false = ($2->true_or_false == TRUE) ? FALSE : TRUE;
         $$->chain_true = $2->chain_false;
         $$->chain_false = $2->chain_true;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_NOT, "not");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_NOT, "not");
+        addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugQuaternionInformation();
     }
     | LP BoolExpression RP {
@@ -590,10 +489,7 @@ BoolExpression
         $$->true_or_false = $2->true_or_false;
         $$->chain_true = $2->chain_true;
         $$->chain_false = $2->chain_false;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_LP_RP, "()");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
+        $$->ast_node = $2->ast_node;
         printDebugQuaternionInformation();
     }
 BoolExpressionAnd
@@ -602,10 +498,10 @@ BoolExpressionAnd
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         $$->true_or_false = $1->true_or_false;
         $$->chain_false = $1->chain_false;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_AND, "and");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_AND, "and");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
         printDebugQuaternionInformation();
     }
 BoolExpressionOR
@@ -614,10 +510,10 @@ BoolExpressionOR
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
         $$->true_or_false = $1->true_or_false;
         $$->chain_true = $1->chain_true;
-        // $$->ast_node = createSyntaxTreeNodePointer();
-        // createSyntaxTreeNode($$->ast_node);
-        // setSyntaxTreeNode(*($$->ast_node), NODE_OR, "or");
-        // addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
+        $$->ast_node = createSyntaxTreeNodePointer();
+        createSyntaxTreeNode($$->ast_node);
+        setSyntaxTreeNode(*($$->ast_node), NODE_OR, "or");
+        addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
         printDebugQuaternionInformation();
     }
 Variable
@@ -657,7 +553,7 @@ Variable
 
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
-        setSyntaxTreeNode(*($$->ast_node), NODE_NULL, $1);
+        setSyntaxTreeNode(*($$->ast_node), NODE_VARIABLE, $1);
         printDebugVariableInformation();
         printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
@@ -691,37 +587,37 @@ RelationOperator
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_LT;
         $$->type_opcode = OPCODE_JLT;
-        $$->value       = "LT";
+        $$->value       = "<";
     }
     | GT {
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_GT;
         $$->type_opcode = OPCODE_JGT;
-        $$->value       = "GT";
+        $$->value       = ">";
     }
     | LE {
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_LE;
         $$->type_opcode = OPCODE_JLE;
-        $$->value       = "LE";
+        $$->value       = "<=";
     }
     | GE {
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_GE;
         $$->type_opcode = OPCODE_JGE;
-        $$->value       = "GE";
+        $$->value       = ">=";
     }
     | EQ {
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_EQ;
         $$->type_opcode = OPCODE_JEQ;
-        $$->value       = "EQ";
+        $$->value       = "=";
     }
     | NE {
         $$ = ALLOCATE_STRUCT_MEMORY(RelationOperator);
         $$->type_ast    = NODE_NE;
         $$->type_opcode = OPCODE_JNE;
-        $$->value       = "NE";
+        $$->value       = "<>";
     }
 
 %%

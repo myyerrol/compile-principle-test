@@ -37,7 +37,7 @@ void deleteQuaternionNode(void)
     g_quaternion_head_node = NULL;
 }
 
-void printAllQuaternionNode(void)
+void printQuaternionNode(void)
 {
     char *argument_a, *argument_b, *result, *opcode;
     QuaternionTableNode *quaternion_temp_node;

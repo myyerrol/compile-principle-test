@@ -35,7 +35,7 @@ typedef struct QuaternionTableNode {
 
 extern void createQuaternionNode(void);
 extern void deleteQuaternionNode(void);
-extern void printAllQuaternionNode(void);
+extern void printQuaternionNode(void);
 extern int backpatchQuaternionNodeChain(int chain, int index);
 extern int generateQuaternionNode(int argument_a, int argument_b, int result,
                                   int opcode);

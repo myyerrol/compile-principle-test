@@ -9,7 +9,7 @@ int main(void)
     createConstantNode();
     generateConstantNode(TYPE_INTEGER, "10");
     generateConstantNode(TYPE_INTEGER, "20");
-    printAllConstantNode();
+    printConstantNode();
     printf("\n");
 
     createVariableNode();
@@ -17,7 +17,7 @@ int main(void)
     generateVariableNode(TYPE_INTEGER, VARIABLE_TEMP, "-10", "t2");
     generateVariableNode(TYPE_INTEGER, VARIABLE_TEMP, "200", "t3");
     generateVariableNode(TYPE_INTEGER, VARIABLE_TEMP, "0", "t3");
-    printAllVariableNode();
+    printVariableNode();
     printf("\n");
 
     createQuaternionNode();
@@ -25,7 +25,11 @@ int main(void)
     generateQuaternionNode(1, 2, -2, OPCODE_SUB);
     generateQuaternionNode(1, 2, -3, OPCODE_MUL);
     generateQuaternionNode(1, 2, -4, OPCODE_DIV);
-    printAllQuaternionNode();
+    printQuaternionNode();
+
+    deleteConstantNode();
+    deleteVariableNode();
+    deleteQuaternionNode();
 
     return 0;
 }

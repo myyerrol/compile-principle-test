@@ -70,7 +70,7 @@ void deleteVariableNode()
     g_variable_head_node = NULL;
 }
 
-void printAllConstantNode()
+void printConstantNode()
 {
     char *constant_type;
     ConstantTableNode *constant_temp_node;
@@ -103,7 +103,7 @@ void printAllConstantNode()
     }
 }
 
-void printAllVariableNode()
+void printVariableNode()
 {
     char *variable_type;
     char *variable_flag;
