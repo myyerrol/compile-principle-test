@@ -90,7 +90,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 21 "pascal_simple_compiler.y"
+#line 24 "pascal_simple_compiler.y"
 
     int                     type;
     char                    *string;

@@ -7,7 +7,10 @@
 #include "pascal_handle_syntax_tree.h"
 #include "pascal_debug_program.h"
 
-int g_temp_count = 1;
+int g_temp_count          = 1;
+int g_true_or_false       = TRUE;
+int g_true_or_false_if    = TRUE;
+int g_true_or_false_while = TRUE;
 
 int generateTempVariableName(char **name)
 {
@@ -43,37 +46,65 @@ struct Expression *performArithmeticOperation(
     char   **temp_name = (char **)malloc(sizeof(char));
     struct Expression *expr_parent_node;
 
-    type_a  = getSymbolNodeType(expr_l_son_node->index_symbol);
-    type_b  = getSymbolNodeType(expr_r_son_node->index_symbol);
-    value_a = getSymbolNodeValue(expr_l_son_node->index_symbol);
-    value_b = getSymbolNodeValue(expr_r_son_node->index_symbol);
+    if (g_true_or_false_while && g_true_or_false_if) {
+        type_a  = getSymbolNodeType(expr_l_son_node->index_symbol);
+        type_b  = getSymbolNodeType(expr_r_son_node->index_symbol);
+        value_a = getSymbolNodeValue(expr_l_son_node->index_symbol);
+        value_b = getSymbolNodeValue(expr_r_son_node->index_symbol);
 
-    if (type_a == TYPE_INTEGER && type_b == TYPE_INTEGER) {
-        result_int = atoi(value_a) + atoi(value_b);
-        sprintf(result, "%d", result_int);
-        result_type = TYPE_INTEGER;
-    }
-    else if (type_a == TYPE_REAL && type_b == TYPE_REAL) {
-        result_real = atof(value_a) + atof(value_b);
-        sprintf(result, "%lf", result_real);
-        result_type = TYPE_REAL;
+        if (type_a == TYPE_INTEGER && type_b == TYPE_INTEGER) {
+            if (strcmp(opcode, "+") == 0) {
+                result_int = atoi(value_a) + atoi(value_b);
+            }
+            else if (strcmp(opcode, "-") == 0) {
+                result_int = atoi(value_a) - atoi(value_b);
+            }
+            else if (strcmp(opcode, "*") == 0) {
+                result_int = atoi(value_a) * atoi(value_b);
+            }
+            else if (strcmp(opcode, "/") == 0) {
+                result_int = atoi(value_a) / atoi(value_b);
+            }
+            sprintf(result, "%d", result_int);
+            result_type = TYPE_INTEGER;
+        }
+        else if (type_a == TYPE_REAL && type_b == TYPE_REAL) {
+            if (strcmp(opcode, "+") == 0) {
+                result_real = atof(value_a) + atof(value_b);
+            }
+            else if (strcmp(opcode, "-") == 0) {
+                result_real = atof(value_a) - atof(value_b);
+            }
+            else if (strcmp(opcode, "*") == 0) {
+                result_real = atof(value_a) * atof(value_b);
+            }
+            else if (strcmp(opcode, "/") == 0) {
+                result_real = atof(value_a) / atof(value_b);
+            }
+            sprintf(result, "%lf", result_real);
+            result_type = TYPE_REAL;
+        }
+        else {
+            printf("\nWarning, type [%s]  mismatch type [%s]!\n", value_a,
+                value_b);
+            exit(EXIT_FAILURE);
+        }
+
+        if (!generateTempVariableName(temp_name)) {
+            *temp_name = "temp";
+        }
+
+        index_symbol = generateVariableNode(result_type, VARIABLE_TEMP, result,
+                                            *temp_name);
+        free(*temp_name);
+        *temp_name = NULL;
+        g_temp_count++;
     }
     else {
-        printf("\nWarning, type [%s]  mismatch type [%s]!\n", value_a,
-            value_b);
-        exit(EXIT_FAILURE);
+        index_symbol = 0;
+        result_type  = TYPE_NULL;
     }
 
-    if (!generateTempVariableName(temp_name)) {
-        *temp_name = "temp";
-    }
-
-    index_symbol = generateVariableNode(result_type, VARIABLE_TEMP, result,
-                                        *temp_name);
-    free(*temp_name);
-    *temp_name = NULL;
-
-    g_temp_count++;
     expr_parent_node = ALLOCATE_STRUCT_MEMORY(Expression);
     expr_parent_node->index_symbol = index_symbol;
     expr_parent_node->type = result_type;

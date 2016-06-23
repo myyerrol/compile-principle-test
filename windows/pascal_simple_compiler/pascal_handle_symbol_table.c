@@ -77,7 +77,7 @@ void printConstantNode()
     constant_temp_node = g_constant_head_node;
 
     printf("==============================================================\n");
-    printf("                     Constant Symbol Table                    \n");
+    printf("                    Constant Symbol Table                     \n");
     printf("==============================================================\n");
     printf("[index]           [element's type]           [element's value]\n");
 
@@ -276,7 +276,7 @@ int backpatchVariableNodeChain(int index, int type)
 int generateConstantNode(int type, char *value)
 {
     ConstantTableNode *constant_new_node;
-    constant_new_node = 
+    constant_new_node =
         (ConstantTableNode *)malloc(sizeof(ConstantTableNode));
     constant_new_node->constant =
         (ConstantTable *)malloc(sizeof(ConstantTable));
@@ -307,7 +307,7 @@ int generateConstantNode(int type, char *value)
 int generateVariableNode(int type, int flag, char *value, char *name)
 {
     VariableTableNode *variable_new_node;
-    
+
     variable_new_node =
         (VariableTableNode *)malloc(sizeof(VariableTableNode));
     variable_new_node->variable =

@@ -38,9 +38,6 @@
 #define NODE_DEFINITION           778
 #define NODE_COLON                779
 
-#define SPACE_POSITION            6
-#define SPACE_HALF_LENGTH         4
-
 #define PRINT_SPACE(count)        \
 do {                              \
     int i;                        \

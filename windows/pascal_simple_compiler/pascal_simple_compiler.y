@@ -14,6 +14,9 @@
 
 extern int g_quaternion_index;
 extern int g_temp_count;
+extern int g_true_or_false;
+extern int g_true_or_false_if;
+extern int g_true_or_false_while;
 
 int yyerror(const char *string);
 %}
@@ -219,7 +222,6 @@ StatementList
         $$->chain = $2->chain;
         addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
         $$->ast_node = $1->ast_node;
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
@@ -249,6 +251,7 @@ Statement
         addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
         $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
+        g_true_or_false_if = TRUE;
     }
     | IfBoolExpressionThen Statement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
@@ -256,6 +259,7 @@ Statement
         addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
         $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
+        g_true_or_false_if = TRUE;
     }
     | WhileBoolExpressionDo Statement {
         backpatchQuaternionNodeChain($2->chain, $1->loop_start);
@@ -265,6 +269,7 @@ Statement
         addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
         $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
+        g_true_or_false_while = TRUE;
     }
     | CompoundStatement {
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
@@ -282,6 +287,14 @@ CompoundStatement
     }
 AssignmentStatement
     : Variable ASSIGN Expression {
+        if (g_true_or_false_while && g_true_or_false_if) {
+            modifyVariableNodeValue($1->index_symbol, $3->value);
+            generateQuaternionNode($3->index_symbol, 0, $1->index_symbol,
+                                   OPCODE_ASSIGN);
+        }
+        else {
+            generateQuaternionNode($3->index_symbol, 0, 0, OPCODE_ASSIGN);
+        }
         if (getVariableNodeDefine($1->index_symbol) == FALSE) {
             printf("\nError, variable is used but not defined!\n");
             exit(EXIT_FAILURE);
@@ -291,9 +304,6 @@ AssignmentStatement
             exit(EXIT_FAILURE);
         }
 
-        modifyVariableNode($1->index_symbol, $3->type, $3->value);
-        generateQuaternionNode($3->index_symbol, 0, $1->index_symbol,
-                               OPCODE_ASSIGN);
         $$ = ALLOCATE_STRUCT_MEMORY(Statement);
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
@@ -301,7 +311,6 @@ AssignmentStatement
         addSyntaxTreeSonNode(*($$->ast_node), *($1->ast_node));
         addSyntaxTreeSonNode(*($$->ast_node), *($3->ast_node));
         printDebugInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
 IfStatementElse
     : IfBoolExpressionThen Statement ELSE {
@@ -313,6 +322,7 @@ IfStatementElse
         addSyntaxTreeSonNode(*($1->ast_node), *($2->ast_node));
         $$->ast_node = $1->ast_node;
         printDebugQuaternionInformation();
+        g_true_or_false_if = (g_true_or_false_if) ? FALSE : TRUE;
     }
 IfBoolExpressionThen
     : IF BoolExpression THEN {
@@ -324,6 +334,7 @@ IfBoolExpressionThen
         setSyntaxTreeNode(*($$->ast_node), NODE_IF, "if");
         addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugQuaternionInformation();
+        g_true_or_false_if = g_true_or_false;
     }
 WhileBoolExpressionDo
     : While BoolExpression DO {
@@ -336,6 +347,7 @@ WhileBoolExpressionDo
         setSyntaxTreeNode(*($$->ast_node), NODE_WHILE, "while");
         addSyntaxTreeSonNode(*($$->ast_node), *($2->ast_node));
         printDebugQuaternionInformation();
+        g_true_or_false_while = g_true_or_false;
     }
 While
     : WHILE {
@@ -348,22 +360,18 @@ Expression
     : Expression ADD Expression {
         $$ = performArithmeticOperation($1, $3, OPCODE_ADD, NODE_ADD, "+");
         printDebugInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | Expression SUB Expression {
         $$ = performArithmeticOperation($1, $3, OPCODE_SUB, NODE_SUB, "-");
         printDebugInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | Expression MUL Expression {
         $$ = performArithmeticOperation($1, $3, OPCODE_MUL, NODE_MUL, "*");
         printDebugInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | Expression DIV Expression {
         $$ = performArithmeticOperation($1, $3, OPCODE_DIV, NODE_DIV, "/");
         printDebugInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | LP Expression RP {
         $$ = $2;
@@ -432,10 +440,10 @@ BoolExpression
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
 
         if ($1->type == TYPE_INTEGER && $3->type == TYPE_INTEGER) {
-            JUDGE_BOOL_EXPRESSION($1, $3, $$, $2, atoi);
+            JUDGE_BOOL_EXPRESSION($1, $3, $2, atoi);
         }
         else if ($1->type == TYPE_REAL && $3->type == TYPE_REAL) {
-            JUDGE_BOOL_EXPRESSION($1, $3, $$, $2, atof);
+            JUDGE_BOOL_EXPRESSION($1, $3, $2, atof);
         }
         else {
             printf("\nWarning, type [%s] mismatch type [%s]\n!", $1->value,
@@ -475,7 +483,6 @@ BoolExpression
     }
     | NOT BoolExpression {
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
-        $$->true_or_false = ($2->true_or_false == TRUE) ? FALSE : TRUE;
         $$->chain_true = $2->chain_false;
         $$->chain_false = $2->chain_true;
         $$->ast_node = createSyntaxTreeNodePointer();
@@ -486,7 +493,6 @@ BoolExpression
     }
     | LP BoolExpression RP {
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
-        $$->true_or_false = $2->true_or_false;
         $$->chain_true = $2->chain_true;
         $$->chain_false = $2->chain_false;
         $$->ast_node = $2->ast_node;
@@ -496,7 +502,6 @@ BoolExpressionAnd
     : BoolExpression AND {
         backpatchQuaternionNodeChain($1->chain_true, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
-        $$->true_or_false = $1->true_or_false;
         $$->chain_false = $1->chain_false;
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
@@ -508,7 +513,6 @@ BoolExpressionOR
     : BoolExpression OR {
         backpatchQuaternionNodeChain($1->chain_true, g_quaternion_index);
         $$ = ALLOCATE_STRUCT_MEMORY(BoolExpression);
-        $$->true_or_false = $1->true_or_false;
         $$->chain_true = $1->chain_true;
         $$->ast_node = createSyntaxTreeNodePointer();
         createSyntaxTreeNode($$->ast_node);
@@ -555,7 +559,6 @@ Variable
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_VARIABLE, $1);
         printDebugVariableInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
 Constant
     : NUMBER_INTEGER {
@@ -568,7 +571,6 @@ Constant
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_INTEGER, $1);
         printDebugConstantInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
     | NUMBER_REAL {
         $$ = ALLOCATE_STRUCT_MEMORY(Constant);
@@ -580,7 +582,6 @@ Constant
         createSyntaxTreeNode($$->ast_node);
         setSyntaxTreeNode(*($$->ast_node), NODE_REAL, $1);
         printDebugConstantInformation();
-        printDebugAbstractSyntaxTreeInformation(*($$->ast_node));
     }
 RelationOperator
     : LT {

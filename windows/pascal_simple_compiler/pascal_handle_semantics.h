@@ -1,65 +1,65 @@
 #ifndef PASCAL_HANDLE_SEMANTICS_H
 #define PASCAL_HANDLE_SEMANTICS_H
 
-#define STRING_SIZE            20
-#define STRING_WITH_MINUS_SIZE 25
-#define TRUE                   1
-#define FALSE                  0
-#define ERROR                 -1
+#define STRING_SIZE                                           20
+#define STRING_WITH_MINUS_SIZE                                25
+#define TRUE                                                  1
+#define FALSE                                                 0
+#define ERROR                                                -1
 
-#define ALLOCATE_STRUCT_MEMORY(type)                                     \
-(struct type *)malloc(sizeof(struct type))                               \
+#define ALLOCATE_STRUCT_MEMORY(type)                          \
+(struct type *)malloc(sizeof(struct type))                    \
 
-#define JUDGE_BOOL_EXPRESSION(expr_l, expr_r, expr_bool, operator, type) \
-do {                                                                     \
-    if (operator->type_opcode == OPCODE_JLT) {                           \
-        if (type(expr_l->value) < type(expr_r->value)) {                 \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator->type_opcode == OPCODE_JGT) {                      \
-        if (type(expr_l->value) > type(expr_r->value)) {                 \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator->type_opcode == OPCODE_JLE) {                      \
-        if (type(expr_l->value) <= type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator->type_opcode == OPCODE_JGE) {                      \
-        if (type(expr_l->value) >= type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator->type_opcode == OPCODE_JEQ) {                      \
-        if (type(expr_l->value) == type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
-    else if (operator->type_opcode == OPCODE_JNE) {                      \
-        if (type(expr_l->value) != type(expr_r->value)) {                \
-            expr_bool->true_or_false = TRUE;                             \
-        }                                                                \
-        else {                                                           \
-            expr_bool->true_or_false = FALSE;                            \
-        }                                                                \
-    }                                                                    \
+#define JUDGE_BOOL_EXPRESSION(expr_l, expr_r, operator, type) \
+do {                                                          \
+    if (operator->type_opcode == OPCODE_JLT) {                \
+        if (type(expr_l->value) < type(expr_r->value)) {      \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
+    else if (operator->type_opcode == OPCODE_JGT) {           \
+        if (type(expr_l->value) > type(expr_r->value)) {      \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
+    else if (operator->type_opcode == OPCODE_JLE) {           \
+        if (type(expr_l->value) <= type(expr_r->value)) {     \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
+    else if (operator->type_opcode == OPCODE_JGE) {           \
+        if (type(expr_l->value) >= type(expr_r->value)) {     \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
+    else if (operator->type_opcode == OPCODE_JEQ) {           \
+        if (type(expr_l->value) == type(expr_r->value)) {     \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
+    else if (operator->type_opcode == OPCODE_JNE) {           \
+        if (type(expr_l->value) != type(expr_r->value)) {     \
+            g_true_or_false = TRUE;                           \
+        }                                                     \
+        else {                                                \
+            g_true_or_false = FALSE;                          \
+        }                                                     \
+    }                                                         \
 } while (0)
 
 typedef struct Statement {
