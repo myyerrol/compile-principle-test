@@ -1,1 +1,1 @@
-# compile_principle_test
+# compile-principle-test
